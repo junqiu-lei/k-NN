@@ -1,47 +1,29 @@
-buildSrc/libs
-buildSrc/build/
-buildSrc/es-knn-offline-repo-*
-buildSrc/libKNNIndex*
-
-.gradle/
-build
-.idea/*
-!.idea/codeStyles/codeStyleConfig.xml
-!.idea/copyright
-.DS_Store
-*.log
+### IntelliJ IDEA ###
 out/
-oss/*
-*.iml
+!**/src/main/**/out/
+!**/src/test/**/out/
 
-jni/CMakeCache.txt
-jni/CMakeFiles
-jni/Makefile
-jni/cmake*
-jni/CPack*
-jni/_CPack*
-jni/release
-jni/packages
-jni/CTestTestfile.cmake
-jni/KNNPlugin_JNI.cbp
-jni/Testing/
-jni/_deps/
-jni/bin/
-jni/lib/
-jni/jni_test*
-jni/googletest*
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
-benchmarks/perf-tool/okpt/output
-benchmarks/perf-tool/okpt/dev
-benchmarks/perf-tool/okpt/dataset/
-benchmarks/perf-tool/okpt/!dataset/data.hdf5
-benchmarks/**/__pycache__
-benchmarks/**/.idea
-benchmarks/perf-tool/okpt/*.py[cod]
-benchmarks/perf-tool/okpt/*$py.class
-benchmarks/perf-tool/okpt/lib/
-benchmarks/perf-tool/okpt/bin
-benchmarks/perf-tool/okpt/pyvenv.cfg
-benchmarks/perf-tool/okpt/env/
-benchmarks/perf-tool/okpt/venv/
-benchmarks/perf-tool/okpt/.pytype/
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
