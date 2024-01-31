@@ -32,7 +32,7 @@ public class KNNESSettingsTestIT extends KNNRestTestCase {
         addKnnDoc(INDEX_NAME, "1", FIELD_NAME, vector);
 
         float[] qvector = { 1.0f, 2.0f };
-        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
         assertEquals("knn query failed", RestStatus.OK, RestStatus.fromCode(response.getStatusLine().getStatusCode()));
 
         // disable plugin
@@ -54,7 +54,7 @@ public class KNNESSettingsTestIT extends KNNRestTestCase {
         addKnnDoc(INDEX_NAME, "1", FIELD_NAME, vector);
 
         float[] qvector = { 1.0f, 2.0f };
-        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
         assertEquals("knn query failed", RestStatus.OK, RestStatus.fromCode(response.getStatusLine().getStatusCode()));
 
         // update settings
@@ -63,12 +63,12 @@ public class KNNESSettingsTestIT extends KNNRestTestCase {
         // indexing should be blocked
         Exception ex = expectThrows(
             ResponseException.class,
-            () -> searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1)
+            () -> searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1)
         );
         assertThat(ex.getMessage(), containsString("KNN plugin is disabled"));
         // enable plugin
         updateClusterSettings(KNNSettings.KNN_PLUGIN_ENABLED, true);
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
     }
 
     public void testItemRemovedFromCache_expiration() throws Exception {
@@ -80,7 +80,7 @@ public class KNNESSettingsTestIT extends KNNRestTestCase {
         addKnnDoc(INDEX_NAME, "1", FIELD_NAME, vector);
 
         float[] qvector = { 1.0f, 2.0f };
-        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        Response response = searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
         assertEquals("knn query failed", RestStatus.OK, RestStatus.fromCode(response.getStatusLine().getStatusCode()));
         assertEquals(1, getTotalGraphsInCache());
 
@@ -126,7 +126,7 @@ public class KNNESSettingsTestIT extends KNNRestTestCase {
 
         float[] qvector = { 6.0f, 6.0f };
         // First search to load graph into cache
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
 
         Response response = getKnnStats(Collections.emptyList(), Collections.emptyList());
         String responseBody = EntityUtils.toString(response.getEntity());

@@ -185,7 +185,7 @@ public class KNNSingleNodeTestCase extends OpenSearchSingleNodeTestCase {
      * Run a search against a k-NN index
      */
     protected void searchKNNIndex(String index, String fieldName, float[] vector, int k) {
-        SearchResponse response = client().prepareSearch(index).setQuery(new KNNQueryBuilder(fieldName, vector, k)).get();
+        SearchResponse response = client().prepareSearch(index).setQuery(new KNNQueryBuilder(fieldName, vector, k, 0)).get();
         assertEquals(response.status(), RestStatus.OK);
     }
 

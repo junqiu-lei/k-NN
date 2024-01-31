@@ -118,7 +118,7 @@ public class RestKNNStatsHandlerIT extends KNNRestTestCase {
 
         // First search: Ensure that misses=1
         float[] qvector = { 6.0f, 6.0f };
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
 
         response = getKnnStats(Collections.emptyList(), Collections.emptyList());
         responseBody = EntityUtils.toString(response.getEntity());
@@ -133,7 +133,7 @@ public class RestKNNStatsHandlerIT extends KNNRestTestCase {
         assertEquals(knnQueryWithFilterCount0, knnQueryWithFilterCount1);
 
         // Second search: Ensure that hits=1
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
 
         response = getKnnStats(Collections.emptyList(), Collections.emptyList());
         responseBody = EntityUtils.toString(response.getEntity());

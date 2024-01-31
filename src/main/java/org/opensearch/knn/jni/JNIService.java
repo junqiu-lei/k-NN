@@ -126,6 +126,13 @@ public class JNIService {
         throw new IllegalArgumentException("QueryIndex not supported for provided engine");
     }
 
+    public static KNNQueryResult[] radiusQueryIndex(long indexPointer, float[] queryVector, float radius, String engineName) {
+        if (KNNEngine.FAISS.getName().equals(engineName)) {
+            return FaissService.radiusQueryIndex(indexPointer, queryVector, radius);
+        }
+        throw new IllegalArgumentException("RadiusQueryIndex not supported for provided engine");
+    }
+
     /**
      * Free native memory pointer
      *

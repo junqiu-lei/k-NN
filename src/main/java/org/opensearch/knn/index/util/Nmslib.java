@@ -68,4 +68,9 @@ class Nmslib extends NativeLibrary {
     ) {
         super(methods, scoreTranslation, currentVersion, extension);
     }
+
+    @Override
+    public float distanceTranslation(float distance, SpaceType spaceType) {
+        return distance;
+    }
 }
