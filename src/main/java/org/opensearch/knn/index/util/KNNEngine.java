@@ -152,6 +152,10 @@ public enum KNNEngine implements KNNLibrary {
         return knnLibrary.score(rawScore, spaceType);
     }
 
+    public float rawScoreTranslation(float score, SpaceType spaceType) {
+        return knnLibrary.rawScoreTranslation(score, spaceType);
+    }
+
     @Override
     public ValidationException validateMethod(KNNMethodContext knnMethodContext) {
         return knnLibrary.validateMethod(knnMethodContext);

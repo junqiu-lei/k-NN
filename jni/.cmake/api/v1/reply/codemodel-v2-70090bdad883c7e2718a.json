@@ -1,0 +1,588 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						5,
+						10
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-782f498cee7aeb4b9281.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						24,
+						25,
+						26,
+						27
+					]
+				},
+				{
+					"build" : "external/nmslib/similarity_search",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-external.nmslib.similarity_search-Debug-53b6be87f0d5471c91e6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "external/nmslib/similarity_search"
+				},
+				{
+					"build" : "external/nmslib/similarity_search/src",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-external.nmslib.similarity_search.src-Debug-76500eaf4fdf82534a0b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "external/nmslib/similarity_search/src",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "external/nmslib/similarity_search/apps",
+					"jsonFile" : "directory-external.nmslib.similarity_search.apps-Debug-43503ec32e1fb5e16981.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "external/nmslib/similarity_search/apps",
+					"targetIndexes" : 
+					[
+						6,
+						16,
+						17,
+						29
+					]
+				},
+				{
+					"build" : "external/nmslib/similarity_search/test",
+					"jsonFile" : "directory-external.nmslib.similarity_search.test-Debug-633c7614e22618578cd5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "external/nmslib/similarity_search/test",
+					"targetIndexes" : 
+					[
+						8,
+						28
+					]
+				},
+				{
+					"build" : "external/faiss",
+					"childIndexes" : 
+					[
+						6,
+						7,
+						8,
+						9
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-external.faiss-Debug-d9ba6a6791f509c3fe03.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "external/faiss"
+				},
+				{
+					"build" : "external/faiss/faiss",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-external.faiss.faiss-Debug-869678efb9108dfaed00.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"parentIndex" : 5,
+					"projectIndex" : 2,
+					"source" : "external/faiss/faiss",
+					"targetIndexes" : 
+					[
+						18,
+						19
+					]
+				},
+				{
+					"build" : "external/faiss/demos",
+					"jsonFile" : "directory-external.faiss.demos-Debug-c25a52a791b901d198b6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"parentIndex" : 5,
+					"projectIndex" : 2,
+					"source" : "external/faiss/demos",
+					"targetIndexes" : 
+					[
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15
+					]
+				},
+				{
+					"build" : "external/faiss/benchs",
+					"jsonFile" : "directory-external.faiss.benchs-Debug-92530791d7143d869216.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"parentIndex" : 5,
+					"projectIndex" : 2,
+					"source" : "external/faiss/benchs",
+					"targetIndexes" : 
+					[
+						7
+					]
+				},
+				{
+					"build" : "external/faiss/tutorial/cpp",
+					"jsonFile" : "directory-external.faiss.tutorial.cpp-Debug-f74326bacfa1e4a6e534.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.23.1"
+					},
+					"parentIndex" : 5,
+					"projectIndex" : 2,
+					"source" : "external/faiss/tutorial/cpp",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				},
+				{
+					"build" : "googletest-build",
+					"childIndexes" : 
+					[
+						11
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-googletest-build-Debug-573359f1e82c2a0e641b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 3,
+					"source" : "googletest-src"
+				},
+				{
+					"build" : "googletest-build/googlemock",
+					"childIndexes" : 
+					[
+						12
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-googletest-build.googlemock-Debug-44a406a0ce0027724be7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 10,
+					"projectIndex" : 4,
+					"source" : "googletest-src/googlemock",
+					"targetIndexes" : 
+					[
+						20,
+						21
+					]
+				},
+				{
+					"build" : "googletest-build/googletest",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-googletest-build.googletest-Debug-a8f9dba0603b172c2c76.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 11,
+					"projectIndex" : 5,
+					"source" : "googletest-src/googletest",
+					"targetIndexes" : 
+					[
+						22,
+						23
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "KNNPlugin_JNI",
+					"targetIndexes" : 
+					[
+						24,
+						25,
+						26,
+						27
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "NonMetricSpaceLib",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						5,
+						6,
+						8,
+						16,
+						17,
+						28,
+						29
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						5,
+						6,
+						7,
+						8,
+						9
+					],
+					"name" : "faiss",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						7,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						18,
+						19
+					]
+				},
+				{
+					"childIndexes" : 
+					[
+						4
+					],
+					"directoryIndexes" : 
+					[
+						10
+					],
+					"name" : "googletest-distribution",
+					"parentIndex" : 0
+				},
+				{
+					"childIndexes" : 
+					[
+						5
+					],
+					"directoryIndexes" : 
+					[
+						11
+					],
+					"name" : "gmock",
+					"parentIndex" : 3,
+					"targetIndexes" : 
+					[
+						20,
+						21
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						12
+					],
+					"name" : "gtest",
+					"parentIndex" : 4,
+					"targetIndexes" : 
+					[
+						22,
+						23
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 9,
+					"id" : "1-Flat::@d95e0b3e74ccfa884fa0",
+					"jsonFile" : "target-1-Flat-Debug-b8b38c443879cbf03f98.json",
+					"name" : "1-Flat",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "2-IVFFlat::@d95e0b3e74ccfa884fa0",
+					"jsonFile" : "target-2-IVFFlat-Debug-a534951d3b93c8c55663.json",
+					"name" : "2-IVFFlat",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "3-IVFPQ::@d95e0b3e74ccfa884fa0",
+					"jsonFile" : "target-3-IVFPQ-Debug-c2ce40ae8490dfa378c4.json",
+					"name" : "3-IVFPQ",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "4-GPU::@d95e0b3e74ccfa884fa0",
+					"jsonFile" : "target-4-GPU-Debug-52ab9fc05878508b3096.json",
+					"name" : "4-GPU",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 9,
+					"id" : "5-Multiple-GPUs::@d95e0b3e74ccfa884fa0",
+					"jsonFile" : "target-5-Multiple-GPUs-Debug-d248480f6db47daaf1e3.json",
+					"name" : "5-Multiple-GPUs",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "NonMetricSpaceLib::@8257846651ccede4dab4",
+					"jsonFile" : "target-NonMetricSpaceLib-Debug-d9e7c0d6179f01e7e205.json",
+					"name" : "NonMetricSpaceLib",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "bench_distfunc::@845b9eac47725fa54051",
+					"jsonFile" : "target-bench_distfunc-Debug-fb01c43e0cc685349da4.json",
+					"name" : "bench_distfunc",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 8,
+					"id" : "bench_ivf_selector::@fef9579cdbc7f8aed9f5",
+					"jsonFile" : "target-bench_ivf_selector-Debug-92ff3166d5b0bb11bd08.json",
+					"name" : "bench_ivf_selector",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "bunit::@d2e7b478ac56e56cf4ca",
+					"jsonFile" : "target-bunit-Debug-b0a54d09143914a94571.json",
+					"name" : "bunit",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_imi_flat::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_imi_flat-Debug-9f9e170b4dcbe7381ea5.json",
+					"name" : "demo_imi_flat",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_imi_pq::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_imi_pq-Debug-a722dbecf59d9d960d6c.json",
+					"name" : "demo_imi_pq",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_ivfpq_indexing::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_ivfpq_indexing-Debug-18982a6be7bdd8a360af.json",
+					"name" : "demo_ivfpq_indexing",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_nndescent::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_nndescent-Debug-f42941b510a560d5f061.json",
+					"name" : "demo_nndescent",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_residual_quantizer::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_residual_quantizer-Debug-8bda4b3b6756f1f2613b.json",
+					"name" : "demo_residual_quantizer",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_sift1M::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_sift1M-Debug-5e2b2049a54058fdcec3.json",
+					"name" : "demo_sift1M",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 7,
+					"id" : "demo_weighted_kmeans::@5192e14a8008f62fa5d7",
+					"jsonFile" : "target-demo_weighted_kmeans-Debug-2497cee98cf39496e402.json",
+					"name" : "demo_weighted_kmeans",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "dummy_app::@845b9eac47725fa54051",
+					"jsonFile" : "target-dummy_app-Debug-35a0a98a639ca0ccc8f3.json",
+					"name" : "dummy_app",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "experiment::@845b9eac47725fa54051",
+					"jsonFile" : "target-experiment-Debug-210db57fc3c7d60b0f28.json",
+					"name" : "experiment",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "faiss::@4f45fee92732d97bb1a0",
+					"jsonFile" : "target-faiss-Debug-78b9a5c699531dfbc760.json",
+					"name" : "faiss",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 6,
+					"id" : "faiss_avx2::@4f45fee92732d97bb1a0",
+					"jsonFile" : "target-faiss_avx2-Debug-bde8ebc6b99a715a1b34.json",
+					"name" : "faiss_avx2",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "gmock::@645c719b6bb61ab77cfe",
+					"jsonFile" : "target-gmock-Debug-8f6589f33d45f3717c86.json",
+					"name" : "gmock",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 11,
+					"id" : "gmock_main::@645c719b6bb61ab77cfe",
+					"jsonFile" : "target-gmock_main-Debug-58c2dababba8dc12eb42.json",
+					"name" : "gmock_main",
+					"projectIndex" : 4
+				},
+				{
+					"directoryIndex" : 12,
+					"id" : "gtest::@32fe1c6cd3a65a2fab56",
+					"jsonFile" : "target-gtest-Debug-2e64c420f893d9a062f7.json",
+					"name" : "gtest",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 12,
+					"id" : "gtest_main::@32fe1c6cd3a65a2fab56",
+					"jsonFile" : "target-gtest_main-Debug-49791a3dd8ee30435cbf.json",
+					"name" : "gtest_main",
+					"projectIndex" : 5
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "jni_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-jni_test-Debug-9f442bb8edee4b6cbb37.json",
+					"name" : "jni_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "opensearchknn_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-opensearchknn_common-Debug-101309a0a4530ed5c65c.json",
+					"name" : "opensearchknn_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "opensearchknn_faiss::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-opensearchknn_faiss-Debug-149b1a80ac3f88b8051b.json",
+					"name" : "opensearchknn_faiss",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "opensearchknn_nmslib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-opensearchknn_nmslib-Debug-15427ee974e953341924.json",
+					"name" : "opensearchknn_nmslib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "test_integr::@d2e7b478ac56e56cf4ca",
+					"jsonFile" : "target-test_integr-Debug-3e7518a0460820d49388.json",
+					"name" : "test_integr",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "tune_vptree::@845b9eac47725fa54051",
+					"jsonFile" : "target-tune_vptree-Debug-ad3d595f0478d41048c0.json",
+					"name" : "tune_vptree",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/Users/junqiu/workspace/k-NN/jni",
+		"source" : "/Users/junqiu/workspace/k-NN/jni"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

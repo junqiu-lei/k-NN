@@ -76,6 +76,11 @@ public class Lucene extends JVMLibrary {
     }
 
     @Override
+    public float rawScoreTranslation(float score, SpaceType spaceType) {
+        return score;
+    }
+
+    @Override
     public List<String> mmapFileExtensions() {
         return List.of("vec", "vex");
     }

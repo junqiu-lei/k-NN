@@ -50,7 +50,7 @@ class Nmslib extends NativeLibrary {
         ).addSpaces(SpaceType.L2, SpaceType.L1, SpaceType.LINF, SpaceType.COSINESIMIL, SpaceType.INNER_PRODUCT).build()
     );
 
-    final static Nmslib INSTANCE = new Nmslib(METHODS, Collections.emptyMap(), CURRENT_VERSION, EXTENSION);
+    final static Nmslib INSTANCE = new Nmslib(METHODS, Collections.emptyMap(), Collections.emptyMap(), CURRENT_VERSION, EXTENSION);
 
     /**
      * Constructor for Nmslib
@@ -63,9 +63,10 @@ class Nmslib extends NativeLibrary {
     private Nmslib(
         Map<String, KNNMethod> methods,
         Map<SpaceType, Function<Float, Float>> scoreTranslation,
+        Map<SpaceType, Function<Float, Float>> rawScoreTranslation,
         String currentVersion,
         String extension
     ) {
-        super(methods, scoreTranslation, currentVersion, extension);
+        super(methods, scoreTranslation, rawScoreTranslation, currentVersion, extension);
     }
 }

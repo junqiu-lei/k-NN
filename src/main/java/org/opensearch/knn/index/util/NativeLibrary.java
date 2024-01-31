@@ -22,6 +22,7 @@ import java.util.function.Function;
  */
 abstract class NativeLibrary extends AbstractKNNLibrary {
     private final Map<SpaceType, Function<Float, Float>> scoreTranslation;
+    private final Map<SpaceType, Function<Float, Float>> rawScoreTranslation;
     @Getter
     private final String extension;
     private final AtomicBoolean initialized;
@@ -37,11 +38,13 @@ abstract class NativeLibrary extends AbstractKNNLibrary {
     NativeLibrary(
         Map<String, KNNMethod> methods,
         Map<SpaceType, Function<Float, Float>> scoreTranslation,
+        Map<SpaceType, Function<Float, Float>> rawScoreTranslation,
         String version,
         String extension
     ) {
         super(methods, version);
         this.scoreTranslation = scoreTranslation;
+        this.rawScoreTranslation = rawScoreTranslation;
         this.extension = extension;
         this.initialized = new AtomicBoolean(false);
     }
@@ -58,6 +61,15 @@ abstract class NativeLibrary extends AbstractKNNLibrary {
         }
 
         return spaceType.scoreTranslation(rawScore);
+    }
+
+    @Override
+    public float rawScoreTranslation(float score, SpaceType spaceType) {
+        if (this.rawScoreTranslation.containsKey(spaceType)) {
+            return this.rawScoreTranslation.get(spaceType).apply(score);
+        }
+
+        return spaceType.rawScoreTranslation(score);
     }
 
     @Override

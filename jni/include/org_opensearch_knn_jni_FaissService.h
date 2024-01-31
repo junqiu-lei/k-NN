@@ -50,6 +50,9 @@ JNIEXPORT jlong JNICALL Java_org_opensearch_knn_jni_FaissService_loadIndex
 JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryIndex
   (JNIEnv *, jclass, jlong, jfloatArray, jint, jintArray);
 
+JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_radiusQueryIndex
+  (JNIEnv *, jclass, jlong, jfloatArray, jfloat);
+
 /*
  * Class:     org_opensearch_knn_jni_FaissService
  * Method:    queryIndex_WithFilter

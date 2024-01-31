@@ -272,14 +272,25 @@ public class KNNWeight extends Weight {
                 throw new RuntimeException("Index has already been closed");
             }
             int[] parentIds = getParentIdsArray(context);
-            results = JNIService.queryIndex(
-                indexAllocation.getMemoryAddress(),
-                knnQuery.getQueryVector(),
-                knnQuery.getK(),
-                knnEngine.getName(),
-                filterIdsArray,
-                parentIds
-            );
+            if (knnQuery.getRadius() > 0) {
+                float rawRadius = knnEngine.rawScoreTranslation(knnQuery.getRadius(), spaceType);
+
+                results = JNIService.radiusQueryIndex(
+                    indexAllocation.getMemoryAddress(),
+                    knnQuery.getQueryVector(),
+                    rawRadius,
+                    knnEngine.getName()
+                );
+            } else {
+                results = JNIService.queryIndex(
+                    indexAllocation.getMemoryAddress(),
+                    knnQuery.getQueryVector(),
+                    knnQuery.getK(),
+                    knnEngine.getName(),
+                    filterIdsArray,
+                    parentIds
+                );
+            }
 
         } catch (Exception e) {
             GRAPH_QUERY_ERRORS.increment();

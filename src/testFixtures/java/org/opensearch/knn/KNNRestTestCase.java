@@ -1012,7 +1012,7 @@ public class KNNRestTestCase extends ODFERestTestCase {
         List<String> kVectors;
 
         for (int i = 0; i < queryVectors.length; i++) {
-            KNNQueryBuilder knnQueryBuilderRecall = new KNNQueryBuilder(testField, queryVectors[i], k);
+            KNNQueryBuilder knnQueryBuilderRecall = new KNNQueryBuilder(testField, queryVectors[i], k, 0);
             Response respRecall = searchKNNIndex(testIndex, knnQueryBuilderRecall, k);
             List<KNNResult> resultsRecall = parseSearchResponse(EntityUtils.toString(respRecall.getEntity()), testField);
 
@@ -1049,7 +1049,7 @@ public class KNNRestTestCase extends ODFERestTestCase {
         float[] queryVector = new float[dimension];
         Arrays.fill(queryVector, (float) numDocs);
 
-        Response searchResponse = searchKNNIndex(testIndex, new KNNQueryBuilder(testField, queryVector, k), k);
+        Response searchResponse = searchKNNIndex(testIndex, new KNNQueryBuilder(testField, queryVector, k, 0), k);
         List<KNNResult> results = parseSearchResponse(EntityUtils.toString(searchResponse.getEntity()), testField);
 
         assertEquals(k, results.size());

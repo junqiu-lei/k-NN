@@ -108,6 +108,8 @@ class FaissService {
         int[] parentIds
     );
 
+    public static native KNNQueryResult[] radiusQueryIndex(long indexPointer, float[] queryVector, float radius);
+
     /**
      * Free native memory pointer
      */

@@ -296,7 +296,7 @@ class Faiss extends NativeLibrary {
         ).addSpaces(SpaceType.L2, SpaceType.INNER_PRODUCT).build()
     );
 
-    final static Faiss INSTANCE = new Faiss(METHODS, SCORE_TRANSLATIONS, CURRENT_VERSION, KNNConstants.FAISS_EXTENSION);
+    final static Faiss INSTANCE = new Faiss(METHODS, SCORE_TRANSLATIONS, Collections.emptyMap(), CURRENT_VERSION, KNNConstants.FAISS_EXTENSION);
 
     /**
      * Constructor for Faiss
@@ -309,10 +309,11 @@ class Faiss extends NativeLibrary {
     private Faiss(
         Map<String, KNNMethod> methods,
         Map<SpaceType, Function<Float, Float>> scoreTranslation,
+        Map<SpaceType, Function<Float, Float>> rawScoreTranslation,
         String currentVersion,
         String extension
     ) {
-        super(methods, scoreTranslation, currentVersion, extension);
+        super(methods, scoreTranslation, rawScoreTranslation, currentVersion, extension);
     }
 
     /**

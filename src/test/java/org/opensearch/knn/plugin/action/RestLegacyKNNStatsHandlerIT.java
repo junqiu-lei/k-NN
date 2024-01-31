@@ -90,7 +90,7 @@ public class RestLegacyKNNStatsHandlerIT extends KNNRestTestCase {
 
         // First search: Ensure that misses=1
         float[] qvector = { 6.0f, 6.0f };
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
 
         response = executeKnnStatRequest(Collections.emptyList(), Collections.emptyList(), KNNPlugin.LEGACY_KNN_BASE_URI);
         responseBody = EntityUtils.toString(response.getEntity());
@@ -103,7 +103,7 @@ public class RestLegacyKNNStatsHandlerIT extends KNNRestTestCase {
         assertEquals((Integer) (missCount0 + 1), missCount1);
 
         // Second search: Ensure that hits=1
-        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1), 1);
+        searchKNNIndex(INDEX_NAME, new KNNQueryBuilder(FIELD_NAME, qvector, 1, 0), 1);
 
         response = executeKnnStatRequest(Collections.emptyList(), Collections.emptyList(), KNNPlugin.LEGACY_KNN_BASE_URI);
         responseBody = EntityUtils.toString(response.getEntity());

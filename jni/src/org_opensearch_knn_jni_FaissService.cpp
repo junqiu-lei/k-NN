@@ -88,6 +88,19 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryInd
     return nullptr;
 }
 
+JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_radiusQueryIndex(JNIEnv * env, jclass cls,
+                                                                                   jlong indexPointerJ,
+                                                                                   jfloatArray queryVectorJ, jfloat radiusJ)
+{
+    try {
+        return knn_jni::faiss_wrapper::RangeSearch(&jniUtil, env, indexPointerJ, queryVectorJ, radiusJ);
+
+    } catch (...) {
+        jniUtil.CatchCppExceptionAndThrowJava(env);
+    }
+    return nullptr;
+}
+
 JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryIndexWithFilter
   (JNIEnv * env, jclass cls, jlong indexPointerJ, jfloatArray queryVectorJ, jint kJ, jintArray filteredIdsJ, jintArray parentIdsJ) {
 

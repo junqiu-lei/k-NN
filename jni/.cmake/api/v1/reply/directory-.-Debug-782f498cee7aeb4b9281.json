@@ -1,0 +1,69 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 251,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "library",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"release/libopensearchknn_common.jnilib"
+			],
+			"targetId" : "opensearchknn_common::@6890427a1f51a3e7e1df",
+			"targetIndex" : 25,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 1,
+			"component" : "library",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"release/libopensearchknn_nmslib.jnilib"
+			],
+			"targetId" : "opensearchknn_nmslib::@6890427a1f51a3e7e1df",
+			"targetIndex" : 27,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 1,
+			"component" : "library",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"release/libopensearchknn_faiss.jnilib"
+			],
+			"targetId" : "opensearchknn_faiss::@6890427a1f51a3e7e1df",
+			"targetIndex" : 26,
+			"type" : "target"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}

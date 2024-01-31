@@ -30,6 +30,11 @@ public enum SpaceType {
         }
 
         @Override
+        public float rawScoreTranslation(float score) {
+            return 1 / score - 1;
+        }
+
+        @Override
         public VectorSimilarityFunction getVectorSimilarityFunction() {
             return VectorSimilarityFunction.EUCLIDEAN;
         }
@@ -38,6 +43,11 @@ public enum SpaceType {
         @Override
         public float scoreTranslation(float rawScore) {
             return 1 / (1 + rawScore);
+        }
+
+        @Override
+        public float rawScoreTranslation(float score) {
+            return 1 / score - 1;
         }
 
         @Override
@@ -50,11 +60,21 @@ public enum SpaceType {
         public float scoreTranslation(float rawScore) {
             return 1 / (1 + rawScore);
         }
+
+        @Override
+        public float rawScoreTranslation(float score) {
+            return 1 / score - 1;
+        }
     },
     LINF("linf") {
         @Override
         public float scoreTranslation(float rawScore) {
             return 1 / (1 + rawScore);
+        }
+
+        @Override
+        public float rawScoreTranslation(float score) {
+            return 1 / score - 1;
         }
     },
     INNER_PRODUCT("innerproduct") {
@@ -75,6 +95,11 @@ public enum SpaceType {
         }
 
         @Override
+        public float rawScoreTranslation(float score) {
+            return -score + 1;
+        }
+
+        @Override
         public VectorSimilarityFunction getVectorSimilarityFunction() {
             return VectorSimilarityFunction.DOT_PRODUCT;
         }
@@ -83,6 +108,11 @@ public enum SpaceType {
         @Override
         public float scoreTranslation(float rawScore) {
             return 1 / (1 + rawScore);
+        }
+
+        @Override
+        public float rawScoreTranslation(float score) {
+            return 1 / score - 1;
         }
     };
 
@@ -95,6 +125,8 @@ public enum SpaceType {
     }
 
     public abstract float scoreTranslation(float rawScore);
+
+    public abstract float rawScoreTranslation(float score);
 
     /**
      * Get VectorSimilarityFunction that maps to this SpaceType

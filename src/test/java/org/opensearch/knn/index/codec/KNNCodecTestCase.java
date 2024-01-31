@@ -164,11 +164,11 @@ public class KNNCodecTestCase extends KNNTestCase {
         // query to verify distance for each of the field
         IndexSearcher searcher = new IndexSearcher(reader);
         float score = searcher.search(
-            new KNNQuery("test_vector", new float[] { 1.0f, 0.0f, 0.0f }, 1, "dummy", (BitSetProducer) null),
+            new KNNQuery("test_vector", new float[] { 1.0f, 0.0f, 0.0f }, 1, "dummy", 0, (BitSetProducer) null),
             10
         ).scoreDocs[0].score;
         float score1 = searcher.search(
-            new KNNQuery("my_vector", new float[] { 1.0f, 2.0f }, 1, "dummy", (BitSetProducer) null),
+            new KNNQuery("my_vector", new float[] { 1.0f, 2.0f }, 1, "dummy", 0, (BitSetProducer) null),
             10
         ).scoreDocs[0].score;
         assertEquals(1.0f / (1 + 25), score, 0.01f);

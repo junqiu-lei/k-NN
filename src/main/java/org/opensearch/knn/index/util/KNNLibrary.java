@@ -68,6 +68,8 @@ public interface KNNLibrary {
      */
     float score(float rawScore, SpaceType spaceType);
 
+    float rawScoreTranslation(float score, SpaceType spaceType);
+
     /**
      * Validate the knnMethodContext for the given library. A ValidationException should be thrown if the method is
      * deemed invalid.

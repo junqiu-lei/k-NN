@@ -47,7 +47,10 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
     public static final ParseField K_FIELD = new ParseField("k");
     public static final ParseField FILTER_FIELD = new ParseField("filter");
     public static final ParseField IGNORE_UNMAPPED_FIELD = new ParseField("ignore_unmapped");
+    public static final ParseField RADIUS_FIELD = new ParseField("radius");
     public static final int K_MAX = 10000;
+    public static final float RADIUS_MAX = 1.0f;
+    public static final float RADIUS_MIN = 0.0f;
     /**
      * The name for the knn query
      */
@@ -60,6 +63,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
     private int k = 0;
     private QueryBuilder filter;
     private boolean ignoreUnmapped = false;
+    private float radius = 0;
 
     /**
      * Constructs a new knn query
@@ -68,11 +72,11 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
      * @param vector    Array of floating points
      * @param k         K nearest neighbours for the given vector
      */
-    public KNNQueryBuilder(String fieldName, float[] vector, int k) {
-        this(fieldName, vector, k, null);
+    public KNNQueryBuilder(String fieldName, float[] vector, int k, float radius) {
+        this(fieldName, vector, k, null, radius);
     }
 
-    public KNNQueryBuilder(String fieldName, float[] vector, int k, QueryBuilder filter) {
+    public KNNQueryBuilder(String fieldName, float[] vector, int k, QueryBuilder filter, float radius) {
         if (Strings.isNullOrEmpty(fieldName)) {
             throw new IllegalArgumentException("[" + NAME + "] requires fieldName");
         }
@@ -82,11 +86,14 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         if (vector.length == 0) {
             throw new IllegalArgumentException("[" + NAME + "] query vector is empty");
         }
-        if (k <= 0) {
-            throw new IllegalArgumentException("[" + NAME + "] requires k > 0");
-        }
+        // if (k <= 0) {
+        // throw new IllegalArgumentException("[" + NAME + "] requires k > 0");
+        // }
         if (k > K_MAX) {
             throw new IllegalArgumentException("[" + NAME + "] requires k <= " + K_MAX);
+        }
+        if (radius > RADIUS_MAX || radius < RADIUS_MIN) {
+            throw new IllegalArgumentException("[" + NAME + "] requires radius to be between " + RADIUS_MIN + " and " + RADIUS_MAX);
         }
 
         this.fieldName = fieldName;
@@ -94,6 +101,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         this.k = k;
         this.filter = filter;
         this.ignoreUnmapped = false;
+        this.radius = radius;
     }
 
     public static void initialize(ModelDao modelDao) {
@@ -142,6 +150,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         String queryName = null;
         String currentFieldName = null;
         boolean ignoreUnmapped = false;
+        float radius = 0;
         XContentParser.Token token;
         KNNCounter.KNN_QUERY_REQUESTS.increment();
         while ((token = parser.nextToken()) != XContentParser.Token.END_OBJECT) {
@@ -166,6 +175,8 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                             }
                         } else if (AbstractQueryBuilder.NAME_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                             queryName = parser.text();
+                        } else if (RADIUS_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
+                            radius = (float) NumberFieldMapper.NumberType.FLOAT.parse(parser.objectBytes(), false);
                         } else {
                             throw new ParsingException(
                                 parser.getTokenLocation(),
@@ -195,7 +206,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
             }
         }
 
-        KNNQueryBuilder knnQueryBuilder = new KNNQueryBuilder(fieldName, ObjectsToFloats(vector), k, filter);
+        KNNQueryBuilder knnQueryBuilder = new KNNQueryBuilder(fieldName, ObjectsToFloats(vector), k, filter, radius);
         knnQueryBuilder.ignoreUnmapped(ignoreUnmapped);
         knnQueryBuilder.queryName(queryName);
         knnQueryBuilder.boost(boost);
@@ -258,6 +269,9 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         builder.field(K_FIELD.getPreferredName(), k);
         if (filter != null) {
             builder.field(FILTER_FIELD.getPreferredName(), filter);
+        }
+        if (radius > 0) {
+            builder.field(RADIUS_FIELD.getPreferredName(), radius);
         }
         if (ignoreUnmapped) {
             builder.field(IGNORE_UNMAPPED_FIELD.getPreferredName(), ignoreUnmapped);
@@ -327,6 +341,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
             .k(this.k)
             .filter(this.filter)
             .context(context)
+            .radius(this.radius)
             .build();
         return KNNQueryFactory.create(createQueryRequest);
     }
