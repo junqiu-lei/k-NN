@@ -524,9 +524,11 @@ public class LuceneEngineIT extends KNNRestTestCase {
             KNNQueryBuilder queryBuilder;
 
             if (filterField != null && filterValue != null) {
-                queryBuilder = new KNNQueryBuilder(FIELD_NAME, searchVectors[i], QueryBuilders.termQuery(filterField, filterValue), radius);
+                queryBuilder = new KNNQueryBuilder.Builder(FIELD_NAME, searchVectors[i]).distance(radius)
+                    .filter(QueryBuilders.termQuery(filterField, filterValue))
+                    .build();
             } else {
-                queryBuilder = new KNNQueryBuilder(FIELD_NAME, searchVectors[i], radius);
+                queryBuilder = new KNNQueryBuilder.Builder(FIELD_NAME, searchVectors[i]).distance(radius).build();
             }
 
             final String responseBody = EntityUtils.toString(searchKNNIndex(INDEX_NAME, queryBuilder, expectedResults[i]).getEntity());
