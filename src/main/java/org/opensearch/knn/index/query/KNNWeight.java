@@ -277,16 +277,26 @@ public class KNNWeight extends Weight {
                 throw new RuntimeException("Index has already been closed");
             }
             int[] parentIds = getParentIdsArray(context);
-            results = JNIService.queryIndex(
-                indexAllocation.getMemoryAddress(),
-                knnQuery.getQueryVector(),
-                knnQuery.getK(),
-                knnEngine,
-                filterIds,
-                filterType.getValue(),
-                parentIds
-            );
-
+            if (knnQuery.getK() > 0) {
+                results = JNIService.queryIndex(
+                    indexAllocation.getMemoryAddress(),
+                    knnQuery.getQueryVector(),
+                    knnQuery.getK(),
+                    knnEngine,
+                    filterIds,
+                    filterType.getValue(),
+                    parentIds
+                );
+            } else {
+                int indexMaxResultWindow = KNNSettings.getIndexMaxResultWindow(knnQuery.getIndexName());
+                results = JNIService.radiusQueryIndex(
+                    indexAllocation.getMemoryAddress(),
+                    knnQuery.getQueryVector(),
+                    knnQuery.getRadius(),
+                    knnEngine,
+                    indexMaxResultWindow
+                );
+            }
         } catch (Exception e) {
             GRAPH_QUERY_ERRORS.increment();
             throw new RuntimeException(e);
@@ -406,6 +416,9 @@ public class KNNWeight extends Weight {
             filterIdsCount,
             KNNSettings.getFilteredExactSearchThreshold(knnQuery.getIndexName())
         );
+        if (knnQuery.getRadius() >= 0) {
+            return false;
+        }
         int filterThresholdValue = KNNSettings.getFilteredExactSearchThreshold(knnQuery.getIndexName());
         // Refer this GitHub around more details https://github.com/opensearch-project/k-NN/issues/1049 on the logic
         if (filterIdsCount <= knnQuery.getK()) {
