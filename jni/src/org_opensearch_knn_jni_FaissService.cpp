@@ -190,3 +190,44 @@ JNIEXPORT jlong JNICALL Java_org_opensearch_knn_jni_FaissService_transferVectors
 
     return (jlong) vect;
 }
+
+JNIEXPORT jlong JNICALL Java_org_opensearch_knn_jni_FaissService_transferVectorsV2(JNIEnv * env, jclass cls,
+jlong vectorsPointerJ,
+        jobjectArray vectorsJ)
+{
+    std::vector<float> *vect;
+    if ((long) vectorsPointerJ == 0) {
+        vect = new std::vector<float>;
+    } else {
+        vect = reinterpret_cast<std::vector<float>*>(vectorsPointerJ);
+    }
+
+    int dim = jniUtil.GetInnerDimensionOf2dJavaFloatArray(env, vectorsJ);
+    auto dataset = jniUtil.Convert2dJavaObjectArrayToCppFloatVector(env, vectorsJ, dim);
+    vect->insert(vect->end(), dataset.begin(), dataset.end());
+
+    return (jlong) vect;
+}
+
+JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_freeVectors(JNIEnv * env, jclass cls,
+                                                                            jlong vectorsPointerJ)
+{
+    if (vectorsPointerJ != 0) {
+        auto *vect = reinterpret_cast<std::vector<float>*>(vectorsPointerJ);
+        delete vect;
+    }
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_rangeSearchIndex(JNIEnv * env, jclass cls,
+                                                                                   jlong indexPointerJ,
+                                                                                   jfloatArray queryVectorJ,
+                                                                                   jfloat radiusJ, jint maxResultWindowJ)
+{
+    try {
+        return knn_jni::faiss_wrapper::RangeSearch(&jniUtil, env, indexPointerJ, queryVectorJ, radiusJ, maxResultWindowJ);
+
+    } catch (...) {
+        jniUtil.CatchCppExceptionAndThrowJava(env);
+    }
+    return nullptr;
+}

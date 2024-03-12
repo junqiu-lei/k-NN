@@ -262,4 +262,58 @@ public class JNIService {
     public static long transferVectors(long vectorsPointer, float[][] trainingData) {
         return FaissService.transferVectors(vectorsPointer, trainingData);
     }
+
+    /**
+     * Free vectors from memory
+     *
+     * @param vectorsPointer to be freed
+     */
+    public static void freeVectors(long vectorsPointer) {
+        FaissService.freeVectors(vectorsPointer);
+    }
+
+    /**
+     * Experimental: Transfer vectors from Java to native layer. This is the version 2 of transfer vector
+     * functionality. The difference between this and the version 1 is, this version puts vectors at the end rather
+     * than in front. Keeping this name as V2 for now, will come up with better name going forward.
+     * <p>
+     * This is not a production ready function for now. Adding this to ensure that we are able to run atleast 1
+     * micro-benchmarks.
+     * </p>
+     * <p>
+     * TODO: Rename the function
+     * <br>
+     * TODO: Make this function native function and use a common cpp file to host these functions.
+     * </p>
+     * @param vectorsPointer pointer to vectors in native memory. Should be 0 to create vector as well
+     * @param data data to be transferred
+     * @return pointer to native memory location for data
+     *
+     */
+    public static long transferVectorsV2(long vectorsPointer, float[][] data) {
+        return FaissService.transferVectorsV2(vectorsPointer, data);
+    }
+
+    /**
+     * Range search index for a given query vector
+     *
+     * @param indexPointer pointer to index in memory
+     * @param queryVector vector to be used for query
+     * @param radius search within radius threshold
+     * @param knnEngine engine to query index
+     * @param indexMaxResultWindow maximum number of results to return
+     * @return KNNQueryResult array of neighbors within radius
+     */
+    public static KNNQueryResult[] radiusQueryIndex(
+        long indexPointer,
+        float[] queryVector,
+        float radius,
+        KNNEngine knnEngine,
+        int indexMaxResultWindow
+    ) {
+        if (KNNEngine.FAISS == knnEngine) {
+            return FaissService.rangeSearchIndex(indexPointer, queryVector, radius, indexMaxResultWindow);
+        }
+        throw new IllegalArgumentException("RadiusQueryIndex not supported for provided engine");
+    }
 }

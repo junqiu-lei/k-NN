@@ -190,4 +190,37 @@ class FaissService {
      */
     @Deprecated(since = "2.14.0", forRemoval = true)
     public static native long transferVectors(long vectorsPointer, float[][] trainingData);
+
+    /**
+     * Transfer vectors from Java to native layer. This is the version 2 of transfer vector functionality. The
+     * difference between this and the version 1 is, this version puts vectors at the end rather than in front.
+     * Keeping this name as V2 for now, will come up with better name going forward.
+     * <p>
+     * TODO: Rename the function
+     * <br>
+     * TODO: Make this function native function and use a common cpp file to host these functions.
+     * </p>
+     * @param vectorsPointer pointer to vectors in native memory. Should be 0 to create vector as well
+     * @param data data to be transferred
+     * @return pointer to native memory location for data
+     */
+    public static native long transferVectorsV2(long vectorsPointer, float[][] data);
+
+    /**
+     * Free vectors from memory
+     *
+     * @param vectorsPointer to be freed
+     */
+    public static native void freeVectors(long vectorsPointer);
+
+    /**
+     * Range search index
+     *
+     * @param indexPointer pointer to index in memory
+     * @param queryVector vector to be used for query
+     * @param radius search within radius threshold
+     * @param indexMaxResultWindow maximum number of results to return
+     * @return KNNQueryResult array of neighbors within radius
+     */
+    public static native KNNQueryResult[] rangeSearchIndex(long indexPointer, float[] queryVector, float radius, int indexMaxResultWindow);
 }
