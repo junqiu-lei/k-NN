@@ -458,7 +458,6 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                 .radius(radius)
                 .filter(this.filter)
                 .context(context)
-                .radius(radius)
                 .build();
             return RNNQueryFactory.create(createQueryRequest);
         }

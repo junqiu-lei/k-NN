@@ -469,3 +469,37 @@ std::unique_ptr<faiss::IDGrouperBitmap> buildIDGrouperBitmap(knn_jni::JNIUtilInt
     jniUtil->ReleaseIntArrayElements(env, parentIdsJ, parentIdsArray, JNI_ABORT);
     return idGrouper;
 }
+
+jobjectArray knn_jni::faiss_wrapper::RangeSearch(knn_jni::JNIUtilInterface *jniUtil, JNIEnv *env, jlong indexPointerJ,
+                                                 jfloatArray queryVectorJ, jfloat radiusJ) {
+    if (queryVectorJ == nullptr) {
+        throw std::runtime_error("Query Vector cannot be null");
+    }
+
+    auto *indexReader = reinterpret_cast<faiss::IndexIDMap *>(indexPointerJ);
+
+    if (indexReader == nullptr) {
+        throw std::runtime_error("Invalid pointer to indexReader");
+    }
+
+    float *rawQueryVector = jniUtil->GetFloatArrayElements(env, queryVectorJ, nullptr);
+
+    faiss::RangeSearchResult res(1, true);
+    indexReader->range_search(1, rawQueryVector, radiusJ, &res);
+
+    // Process the results, lims[1] contains the total number of results found for single query
+    int resultSize = res.lims[1];
+
+    jclass resultClass = jniUtil->FindClass(env,"org/opensearch/knn/index/query/KNNQueryResult");
+    jmethodID allArgs = jniUtil->FindMethod(env, "org/opensearch/knn/index/query/KNNQueryResult", "<init>");
+
+    jobjectArray results = jniUtil->NewObjectArray(env, resultSize, resultClass, nullptr);
+
+    jobject result;
+    for(int i = 0; i < resultSize; ++i) {
+        result = jniUtil->NewObject(env, resultClass, allArgs, res.labels[i], res.distances[i]);
+        jniUtil->SetObjectArrayElement(env, results, i, result);
+    }
+
+    return results;
+}
