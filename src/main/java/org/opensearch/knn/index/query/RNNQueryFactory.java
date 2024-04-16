@@ -89,12 +89,14 @@ public class RNNQueryFactory extends BaseQueryFactory {
             return rnnQuery;
         }
 
+        final Float traversalRadius = createQueryRequest.getTraversalRadius();
+
         log.debug(String.format("Creating Lucene r-NN query for index: %s \"\", field: %s \"\", k: %f", indexName, fieldName, radius));
         switch (vectorDataType) {
             case BYTE:
-                return getByteVectorSimilarityQuery(fieldName, byteVector, radius, filterQuery);
+                return getByteVectorSimilarityQuery(fieldName, byteVector, radius, filterQuery, traversalRadius);
             case FLOAT:
-                return getFloatVectorSimilarityQuery(fieldName, vector, radius, filterQuery);
+                return getFloatVectorSimilarityQuery(fieldName, vector, radius, filterQuery, traversalRadius);
             default:
                 throw new IllegalArgumentException(
                     String.format(
@@ -116,8 +118,12 @@ public class RNNQueryFactory extends BaseQueryFactory {
         final String fieldName,
         final float[] floatVector,
         final float resultSimilarity,
-        final Query filterQuery
+        final Query filterQuery,
+        final Float traversalRadius
     ) {
+        if (traversalRadius != null) {
+            return new FloatVectorSimilarityQuery(fieldName, floatVector, traversalRadius, resultSimilarity, filterQuery);
+        }
         return new FloatVectorSimilarityQuery(fieldName, floatVector, resultSimilarity, filterQuery);
     }
 
@@ -129,8 +135,12 @@ public class RNNQueryFactory extends BaseQueryFactory {
         final String fieldName,
         final byte[] byteVector,
         final float resultSimilarity,
-        final Query filterQuery
+        final Query filterQuery,
+        final Float traversalRadius
     ) {
+        if (traversalRadius != null) {
+            return new ByteVectorSimilarityQuery(fieldName, byteVector, traversalRadius, resultSimilarity, filterQuery);
+        }
         return new ByteVectorSimilarityQuery(fieldName, byteVector, resultSimilarity, filterQuery);
     }
 }

@@ -44,6 +44,7 @@ public abstract class BaseQueryFactory {
         private VectorDataType vectorDataType;
         private Integer k;
         private Float radius;
+        private Float traversalRadius;
         private QueryBuilder filter;
         private QueryShardContext context;
 

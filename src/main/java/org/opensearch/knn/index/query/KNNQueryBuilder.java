@@ -55,6 +55,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
     public static final ParseField IGNORE_UNMAPPED_FIELD = new ParseField("ignore_unmapped");
     public static final ParseField DISTANCE_FIELD = new ParseField("distance");
     public static final ParseField SCORE_FIELD = new ParseField("score");
+    public static final ParseField TRAVERSAL_SCORE_FIELD = new ParseField("traversal_score");
     public static final int K_MAX = 10000;
     /**
      * The name for the knn query
@@ -68,6 +69,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
     private int k = 0;
     private Float distance = null;
     private Float score = null;
+    private Float traversalScore = null;
     private QueryBuilder filter;
     private boolean ignoreUnmapped = false;
 
@@ -139,6 +141,17 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         return this;
     }
 
+    public KNNQueryBuilder traversalScore(Float traversalScore) {
+        if (traversalScore == null) {
+            throw new IllegalArgumentException("[" + NAME + "] requires traversalScore to be set");
+        }
+        if (traversalScore <= 0) {
+            throw new IllegalArgumentException("[" + NAME + "] requires traversalScore greater than 0");
+        }
+        this.traversalScore = traversalScore;
+        return this;
+    }
+
     /**
      * Builder method for filter
      *
@@ -184,6 +197,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         this.ignoreUnmapped = false;
         this.distance = null;
         this.score = null;
+        this.traversalScore = null;
     }
 
     public static void initialize(ModelDao modelDao) {
@@ -228,6 +242,9 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
             if (isClusterOnOrAfterMinRequiredVersion(KNNConstants.RADIAL_SEARCH_KEY)) {
                 score = in.readOptionalFloat();
             }
+            if (isClusterOnOrAfterMinRequiredVersion(KNNConstants.RADIAL_SEARCH_KEY)) {
+                traversalScore = in.readOptionalFloat();
+            }
         } catch (IOException ex) {
             throw new RuntimeException("[KNN] Unable to create KNNQueryBuilder", ex);
         }
@@ -240,6 +257,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         Integer k = null;
         Float distance = null;
         Float score = null;
+        Float traversalScore = null;
         QueryBuilder filter = null;
         boolean ignoreUnmapped = false;
         String queryName = null;
@@ -268,6 +286,8 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                             distance = (Float) NumberFieldMapper.NumberType.FLOAT.parse(parser.objectBytes(), false);
                         } else if (SCORE_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                             score = (Float) NumberFieldMapper.NumberType.FLOAT.parse(parser.objectBytes(), false);
+                        } else if (TRAVERSAL_SCORE_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
+                            traversalScore = (Float) NumberFieldMapper.NumberType.FLOAT.parse(parser.objectBytes(), false);
                         } else if (IGNORE_UNMAPPED_FIELD.getPreferredName().equals("ignore_unmapped")) {
                             if (isClusterOnOrAfterMinRequiredVersion("ignore_unmapped")) {
                                 ignoreUnmapped = parser.booleanValue();
@@ -334,6 +354,9 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
             knnQueryBuilder.distance(distance);
         } else if (score != null) {
             knnQueryBuilder.score(score);
+            if (traversalScore != null) {
+                knnQueryBuilder.traversalScore(traversalScore);
+            }
         }
 
         return knnQueryBuilder;
@@ -357,6 +380,9 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         }
         if (isClusterOnOrAfterMinRequiredVersion(KNNConstants.RADIAL_SEARCH_KEY)) {
             out.writeOptionalFloat(score);
+        }
+        if (isClusterOnOrAfterMinRequiredVersion(KNNConstants.RADIAL_SEARCH_KEY)) {
+            out.writeOptionalFloat(traversalScore);
         }
     }
 
@@ -423,6 +449,9 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         if (score != null) {
             builder.field(SCORE_FIELD.getPreferredName(), score);
         }
+        if (traversalScore != null) {
+            builder.field(TRAVERSAL_SCORE_FIELD.getPreferredName(), traversalScore);
+        }
         printBoostAndQueryName(builder);
         builder.endObject();
         builder.endObject();
@@ -465,6 +494,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
         // Currently, k-NN supports distance and score types radial search
         // We need transform distance/score to right type of engine required radius.
         Float radius = null;
+        Float traversalRadius = null;
         if (this.distance != null) {
             if (this.distance < 0 && SpaceType.INNER_PRODUCT.equals(spaceType) == false) {
                 throw new IllegalArgumentException("[" + NAME + "] requires distance to be non-negative for space type: " + spaceType);
@@ -477,6 +507,15 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                 throw new IllegalArgumentException("[" + NAME + "] requires score to be in the range (0, 1] for space type: " + spaceType);
             }
             radius = knnEngine.scoreToRadialThreshold(this.score, spaceType);
+            if (this.traversalScore != null) {
+                if (knnEngine.equals(KNNEngine.LUCENE) == false) {
+                    throw new IllegalArgumentException("[" + NAME + "] traversalScore is only supported for Lucene engine");
+                }
+                traversalRadius = knnEngine.scoreToRadialThreshold(this.traversalScore, spaceType);
+                if (traversalRadius > radius) {
+                    throw new IllegalArgumentException("[" + NAME + "] traversalScore should be less than or equal to score");
+                }
+            }
         }
 
         if (fieldDimension != vector.length) {
@@ -531,6 +570,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                 .byteVector(VectorDataType.BYTE == vectorDataType ? byteVector : null)
                 .vectorDataType(vectorDataType)
                 .radius(radius)
+                .traversalRadius(traversalRadius)
                 .filter(this.filter)
                 .context(context)
                 .build();
