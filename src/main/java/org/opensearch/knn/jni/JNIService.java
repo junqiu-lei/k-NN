@@ -278,10 +278,21 @@ public class JNIService {
         float[] queryVector,
         float radius,
         KNNEngine knnEngine,
-        int indexMaxResultWindow
+        int indexMaxResultWindow,
+        long[] filteredIds,
+        int filterIdsType,
+        int[] parentIds
     ) {
         if (KNNEngine.FAISS == knnEngine) {
-            return FaissService.rangeSearchIndex(indexPointer, queryVector, radius, indexMaxResultWindow);
+            return FaissService.rangeSearchIndex(
+                indexPointer,
+                queryVector,
+                radius,
+                indexMaxResultWindow,
+                filteredIds,
+                filterIdsType,
+                parentIds
+            );
         }
         throw new IllegalArgumentException("RadiusQueryIndex not supported for provided engine");
     }

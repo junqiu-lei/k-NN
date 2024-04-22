@@ -295,6 +295,51 @@ void knn_jni::faiss_wrapper::SetSharedIndexState(jlong indexPointerJ, jlong shar
     indexIVFPQ->set_precomputed_table(alignTable, usePrecomputedTable);
 }
 
+// Setup the common search parameters for filtered queries and range searches
+std::unique_ptr<faiss::SearchParameters> setupSearchParameters(
+        knn_jni::JNIUtilInterface * jniUtil, JNIEnv *env, faiss::IndexIDMap *indexReader,
+        jlongArray filterIdsJ, jint filterIdsTypeJ, jintArray parentIdsJ) {
+
+    std::unique_ptr<faiss::IDSelector> idSelector;
+    std::unique_ptr<faiss::IDGrouperBitmap> idGrouper;
+    std::vector<uint64_t> idGrouperBitmap;
+
+    // Setup the ID selector
+    if (filterIdsJ != nullptr) {
+        jlong *filteredIdsArray = jniUtil->GetLongArrayElements(env, filterIdsJ, nullptr);
+        int filterIdsLength = jniUtil->GetJavaLongArrayLength(env, filterIdsJ);
+        if (filterIdsTypeJ == BITMAP) {
+            idSelector.reset(new faiss::IDSelectorJlongBitmap(filterIdsLength, filteredIdsArray));
+        } else {
+            faiss::idx_t* batchIndices = reinterpret_cast<faiss::idx_t*>(filteredIdsArray);
+            idSelector.reset(new faiss::IDSelectorBatch(filterIdsLength, batchIndices));
+        }
+        jniUtil->ReleaseLongArrayElements(env, filterIdsJ, filteredIdsArray, JNI_ABORT);
+    }
+
+    // Setup the ID grouper
+    if (parentIdsJ != nullptr) {
+        idGrouper = buildIDGrouperBitmap(jniUtil, env, parentIdsJ, &idGrouperBitmap);
+    }
+
+    std::unique_ptr<faiss::SearchParameters> searchParameters;
+    auto hnswReader = dynamic_cast<const faiss::IndexHNSW*>(indexReader->index);
+    if (hnswReader) {
+        auto hnswParams = new faiss::SearchParametersHNSW;
+        hnswParams->efSearch = hnswReader->hnsw.efSearch;  // Use the existing efSearch value
+        hnswParams->sel = idSelector.get();
+        hnswParams->grp = idGrouper.get();
+        searchParameters.reset(hnswParams);
+    } else {
+        auto ivfParams = new faiss::SearchParametersIVF;
+        ivfParams->sel = idSelector.get();
+        searchParameters.reset(ivfParams);
+    }
+
+    return searchParameters;
+}
+
+
 jobjectArray knn_jni::faiss_wrapper::QueryIndex(knn_jni::JNIUtilInterface * jniUtil, JNIEnv * env, jlong indexPointerJ,
                                                 jfloatArray queryVectorJ, jint kJ, jintArray parentIdsJ) {
     return knn_jni::faiss_wrapper::QueryIndex_WithFilter(jniUtil, env, indexPointerJ, queryVectorJ, kJ, nullptr, 0, parentIdsJ);
@@ -589,7 +634,7 @@ faiss::IndexIVFPQ * extractIVFPQIndex(faiss::Index * index) {
 }
 
 jobjectArray knn_jni::faiss_wrapper::RangeSearch(knn_jni::JNIUtilInterface *jniUtil, JNIEnv *env, jlong indexPointerJ,
-                                                 jfloatArray queryVectorJ, jfloat radiusJ, jint maxResultWindowJ) {
+                                                 jfloatArray queryVectorJ, jfloat radiusJ, jint maxResultWindowJ, jlongArray filterIdsJ, jint filterIdsTypeJ, jintArray parentIdsJ) {
     if (queryVectorJ == nullptr) {
         throw std::runtime_error("Query Vector cannot be null");
     }
@@ -600,12 +645,75 @@ jobjectArray knn_jni::faiss_wrapper::RangeSearch(knn_jni::JNIUtilInterface *jniU
         throw std::runtime_error("Invalid pointer to indexReader");
     }
 
+    // Prepare search parameters using the common function
+//    auto searchParameters = setupSearchParameters(jniUtil, env, indexReader, filterIdsJ, filterIdsTypeJ, parentIdsJ);
+
     float *rawQueryVector = jniUtil->GetFloatArrayElements(env, queryVectorJ, nullptr);
 
     // The res will be freed by ~RangeSearchResult() in FAISS
     // The second parameter is always true, as lims is allocated by FAISS
     faiss::RangeSearchResult res(1, true);
-    indexReader->range_search(1, rawQueryVector, radiusJ, &res);
+
+    if(filterIdsJ != nullptr) {
+        jlong *filteredIdsArray = jniUtil->GetLongArrayElements(env, filterIdsJ, nullptr);
+        int filterIdsLength = jniUtil->GetJavaLongArrayLength(env, filterIdsJ);
+        std::unique_ptr<faiss::IDSelector> idSelector;
+        if(filterIdsTypeJ == BITMAP) {
+            idSelector.reset(new faiss::IDSelectorJlongBitmap(filterIdsLength, filteredIdsArray));
+        } else {
+            faiss::idx_t* batchIndices = reinterpret_cast<faiss::idx_t*>(filteredIdsArray);
+            idSelector.reset(new faiss::IDSelectorBatch(filterIdsLength, batchIndices));
+        }
+        faiss::SearchParameters *searchParameters;
+        faiss::SearchParametersHNSW hnswParams;
+        faiss::SearchParametersIVF ivfParams;
+        std::unique_ptr<faiss::IDGrouperBitmap> idGrouper;
+        std::vector<uint64_t> idGrouperBitmap;
+        auto hnswReader = dynamic_cast<const faiss::IndexHNSW*>(indexReader->index);
+        if(hnswReader) {
+            // Setting the ef_search value equal to what was provided during index creation. SearchParametersHNSW has a default
+            // value of ef_search = 16 which will then be used.
+            hnswParams.efSearch = hnswReader->hnsw.efSearch;
+            hnswParams.sel = idSelector.get();
+            if (parentIdsJ != nullptr) {
+                idGrouper = buildIDGrouperBitmap(jniUtil, env, parentIdsJ, &idGrouperBitmap);
+                hnswParams.grp = idGrouper.get();
+            }
+            searchParameters = &hnswParams;
+        } else {
+            auto ivfReader = dynamic_cast<const faiss::IndexIVF*>(indexReader->index);
+            auto ivfFlatReader = dynamic_cast<const faiss::IndexIVFFlat*>(indexReader->index);
+            if(ivfReader || ivfFlatReader) {
+                ivfParams.sel = idSelector.get();
+                searchParameters = &ivfParams;
+            }
+        }
+//        try {
+//            indexReader->range_search(1, rawQueryVector, radiusJ, &res, searchParameters);
+//        } catch (...) {
+//            jniUtil->ReleaseFloatArrayElements(env, queryVectorJ, rawQueryvector, JNI_ABORT);
+//            jniUtil->ReleaseLongArrayElements(env, filterIdsJ, filteredIdsArray, JNI_ABORT);
+//            throw;
+//        }
+        indexReader->range_search(1, rawQueryVector, radiusJ, &res, searchParameters);
+        jniUtil->ReleaseLongArrayElements(env, filterIdsJ, filteredIdsArray, JNI_ABORT);
+    } else {
+        faiss::SearchParameters *searchParameters = nullptr;
+        faiss::SearchParametersHNSW hnswParams;
+        std::unique_ptr<faiss::IDGrouperBitmap> idGrouper;
+        std::vector<uint64_t> idGrouperBitmap;
+        auto hnswReader = dynamic_cast<const faiss::IndexHNSW*>(indexReader->index);
+        if(hnswReader!= nullptr && parentIdsJ != nullptr) {
+            // Setting the ef_search value equal to what was provided during index creation. SearchParametersHNSW has a default
+            // value of ef_search = 16 which will then be used.
+            hnswParams.efSearch = hnswReader->hnsw.efSearch;
+            idGrouper = buildIDGrouperBitmap(jniUtil, env, parentIdsJ, &idGrouperBitmap);
+            hnswParams.grp = idGrouper.get();
+            searchParameters = &hnswParams;
+        }
+        indexReader->range_search(1, rawQueryVector, radiusJ, &res, searchParameters);
+    }
+//    indexReader->range_search(1, rawQueryVector, radiusJ, &res, searchParameters.get());
 
     // lims is structured to support batched queries, it has a length of nq + 1 (where nq is the number of queries),
     // lims[i] - lims[i-1] gives the number of results for the i-th query. With a single query we used in k-NN,

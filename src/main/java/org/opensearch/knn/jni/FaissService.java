@@ -198,7 +198,18 @@ class FaissService {
      * @param queryVector vector to be used for query
      * @param radius search within radius threshold
      * @param indexMaxResultWindow maximum number of results to return
+     * @param filteredIds list of doc ids to include in the query result
+     * @param filterIdsType type of filter ids
+     * @param parentIds list of parent doc ids when the knn field is a nested field
      * @return KNNQueryResult array of neighbors within radius
      */
-    public static native KNNQueryResult[] rangeSearchIndex(long indexPointer, float[] queryVector, float radius, int indexMaxResultWindow);
+    public static native KNNQueryResult[] rangeSearchIndex(
+        long indexPointer,
+        float[] queryVector,
+        float radius,
+        int indexMaxResultWindow,
+        long[] filteredIds,
+        int filterIdsType,
+        int[] parentIds
+    );
 }
