@@ -97,6 +97,11 @@ jobs:
           brew reinstall gcc
           export FC=/usr/local/Cellar/gcc/12.2.0/bin/gfortran
 
+      - name: Build cmake
+        run: |
+          cd jni
+          cmake . --fresh -DOpenMP_CXX_INCLUDE_DIR=/opt/homebrew/opt/libomp/include -DOpenMP_CXX_LIB_NAMES=libomp -DOpenMP_C_INCLUDE_DIR=/opt/homebrew/opt/libomp/include -DOpenMP_C_LIB_NAMES=libomp
+          make
       - name: Run build
         run: |
           if sysctl -n machdep.cpu.features machdep.cpu.leaf7_features | grep -i AVX2
