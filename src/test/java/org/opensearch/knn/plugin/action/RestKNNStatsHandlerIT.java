@@ -39,18 +39,8 @@ import java.util.Map;
 import static org.opensearch.knn.TestUtils.KNN_VECTOR;
 import static org.opensearch.knn.TestUtils.PROPERTIES;
 import static org.opensearch.knn.TestUtils.VECTOR_TYPE;
-import static org.opensearch.knn.common.KNNConstants.FAISS_NAME;
-import static org.opensearch.knn.common.KNNConstants.KNN_ENGINE;
-import static org.opensearch.knn.common.KNNConstants.LUCENE_NAME;
-import static org.opensearch.knn.common.KNNConstants.METHOD_HNSW;
-import static org.opensearch.knn.common.KNNConstants.METHOD_IVF;
-import static org.opensearch.knn.common.KNNConstants.METHOD_PARAMETER_NLIST;
-import static org.opensearch.knn.common.KNNConstants.METHOD_PARAMETER_SPACE_TYPE;
-import static org.opensearch.knn.common.KNNConstants.MODEL_ID;
-import static org.opensearch.knn.common.KNNConstants.MODEL_INDEX_NAME;
-import static org.opensearch.knn.common.KNNConstants.NAME;
-import static org.opensearch.knn.common.KNNConstants.NMSLIB_NAME;
-import static org.opensearch.knn.common.KNNConstants.PARAMETERS;
+import static org.opensearch.knn.common.KNNConstants.*;
+import static org.opensearch.knn.common.KNNConstants.MIN_SCORE;
 
 /**
  * Integration tests to check the correctness of RestKNNStatsHandler
@@ -430,6 +420,98 @@ public class RestKNNStatsHandlerIT extends KNNRestTestCase {
         boolean faissField = (Boolean) nodeStats0.get(StatNames.FAISS_LOADED.getName());
 
         assertTrue(faissField);
+    }
+
+    public void testRadialSearchStats_thenSucceed() throws Exception {
+        createKnnIndex(INDEX_NAME, createKnnIndexMapping(FIELD_NAME, 2, METHOD_HNSW, LUCENE_NAME));
+        Float[] vector = { 6.0f, 6.0f };
+        addKnnDoc(INDEX_NAME, "1", FIELD_NAME, vector);
+
+        // First search: radial search by min score
+        XContentBuilder queryBuilderMinScore = XContentFactory.jsonBuilder().startObject().startObject("query");
+        queryBuilderMinScore.startObject("knn");
+        queryBuilderMinScore.startObject(FIELD_NAME);
+        queryBuilderMinScore.field("vector", vector);
+        queryBuilderMinScore.field(MIN_SCORE, 0.95f);
+        queryBuilderMinScore.endObject();
+        queryBuilderMinScore.endObject();
+        queryBuilderMinScore.endObject().endObject();
+
+        searchKNNIndex(INDEX_NAME, queryBuilderMinScore, 1);
+        Response responseWithMinScore = getKnnStats(Collections.emptyList(), Collections.emptyList());
+        String responseBodyWithMinScore = EntityUtils.toString(responseWithMinScore.getEntity());
+        Map<String, Object> nodeStats1MinScore = parseNodeStatsResponse(responseBodyWithMinScore).get(0);
+        Integer radialSearchCountWithMinScore = (Integer) nodeStats1MinScore.get(StatNames.MIN_SCORE_QUERY_REQUESTS.getName());
+
+        assertEquals((Integer) 1, radialSearchCountWithMinScore);
+
+        // Second search: radial search by min score with filter
+        XContentBuilder queryBuilderMinScoreWithFilter = XContentFactory.jsonBuilder().startObject().startObject("query");
+        queryBuilderMinScoreWithFilter.startObject("knn");
+        queryBuilderMinScoreWithFilter.startObject(FIELD_NAME);
+        queryBuilderMinScoreWithFilter.field("vector", vector);
+        queryBuilderMinScoreWithFilter.field(MIN_SCORE, 0.95f);
+        queryBuilderMinScoreWithFilter.field("filter", QueryBuilders.termQuery("_id", "1"));
+        queryBuilderMinScoreWithFilter.endObject();
+        queryBuilderMinScoreWithFilter.endObject();
+        queryBuilderMinScoreWithFilter.endObject().endObject();
+
+        searchKNNIndex(INDEX_NAME, queryBuilderMinScoreWithFilter, 1);
+        Response responseWithMinScoreWithFilter = getKnnStats(Collections.emptyList(), Collections.emptyList());
+        String responseBodyWithMinScoreWithFilter = EntityUtils.toString(responseWithMinScoreWithFilter.getEntity());
+        Map<String, Object> nodeStats1MinScoreWithFilter = parseNodeStatsResponse(responseBodyWithMinScoreWithFilter).get(0);
+        Integer updatedRadialSearchCountWithMinScore = (Integer) nodeStats1MinScoreWithFilter.get(
+            StatNames.MIN_SCORE_QUERY_REQUESTS.getName()
+        );
+        Integer radialSearchCountWithMinScoreWithFilter = (Integer) nodeStats1MinScoreWithFilter.get(
+            StatNames.MIN_SCORE_QUERY_WITH_FILTER_REQUESTS.getName()
+        );
+
+        assertEquals((Integer) 1, radialSearchCountWithMinScoreWithFilter);
+        assertEquals((Integer) 2, updatedRadialSearchCountWithMinScore);
+
+        // Third search: radial search by max distance
+        XContentBuilder queryBuilderMaxDistance = XContentFactory.jsonBuilder().startObject().startObject("query");
+        queryBuilderMaxDistance.startObject("knn");
+        queryBuilderMaxDistance.startObject(FIELD_NAME);
+        queryBuilderMaxDistance.field("vector", vector);
+        queryBuilderMaxDistance.field(MAX_DISTANCE, 100f);
+        queryBuilderMaxDistance.endObject();
+        queryBuilderMaxDistance.endObject();
+        queryBuilderMaxDistance.endObject().endObject();
+
+        searchKNNIndex(INDEX_NAME, queryBuilderMaxDistance, 0);
+        Response responseWithMaxDistance = getKnnStats(Collections.emptyList(), Collections.emptyList());
+        String responseBodyWithMaxDistance = EntityUtils.toString(responseWithMaxDistance.getEntity());
+        Map<String, Object> nodeStats1MaxDistance = parseNodeStatsResponse(responseBodyWithMaxDistance).get(0);
+        Integer radialSearchCountWithMaxDistance = (Integer) nodeStats1MaxDistance.get(StatNames.MAX_DISTANCE_QUERY_REQUESTS.getName());
+
+        assertEquals((Integer) 1, radialSearchCountWithMaxDistance);
+
+        // Fourth search: radial search by max distance with filter
+        XContentBuilder queryBuilderMaxDistanceWithFilter = XContentFactory.jsonBuilder().startObject().startObject("query");
+        queryBuilderMaxDistanceWithFilter.startObject("knn");
+        queryBuilderMaxDistanceWithFilter.startObject(FIELD_NAME);
+        queryBuilderMaxDistanceWithFilter.field("vector", vector);
+        queryBuilderMaxDistanceWithFilter.field(MAX_DISTANCE, 100f);
+        queryBuilderMaxDistanceWithFilter.field("filter", QueryBuilders.termQuery("_id", "1"));
+        queryBuilderMaxDistanceWithFilter.endObject();
+        queryBuilderMaxDistanceWithFilter.endObject();
+        queryBuilderMaxDistanceWithFilter.endObject().endObject();
+
+        searchKNNIndex(INDEX_NAME, queryBuilderMaxDistanceWithFilter, 0);
+        Response responseWithMaxDistanceWithFilter = getKnnStats(Collections.emptyList(), Collections.emptyList());
+        String responseBodyWithMaxDistanceWithFilter = EntityUtils.toString(responseWithMaxDistanceWithFilter.getEntity());
+        Map<String, Object> nodeStats1MaxDistanceWithFilter = parseNodeStatsResponse(responseBodyWithMaxDistanceWithFilter).get(0);
+        Integer updatedRadialSearchCountWithMaxDistance = (Integer) nodeStats1MaxDistanceWithFilter.get(
+            StatNames.MAX_DISTANCE_QUERY_REQUESTS.getName()
+        );
+        Integer radialSearchCountWithMaxDistanceWithFilter = (Integer) nodeStats1MaxDistanceWithFilter.get(
+            StatNames.MAX_DISTANCE_QUERY_WITH_FILTER_REQUESTS.getName()
+        );
+
+        assertEquals((Integer) 1, radialSearchCountWithMaxDistanceWithFilter);
+        assertEquals((Integer) 2, updatedRadialSearchCountWithMaxDistance);
     }
 
     public void trainKnnModel(String modelId, String trainingIndexName, String trainingFieldName, int dimension, String description)

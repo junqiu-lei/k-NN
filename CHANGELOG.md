@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased 2.x](https://github.com/opensearch-project/k-NN/compare/2.14...2.x)
 ### Features
 ### Enhancements
+* Add stats for radial search [#1684](https://github.com/opensearch-project/k-NN/pull/1684)
 ### Bug Fixes
 ### Infrastructure
 ### Documentation
