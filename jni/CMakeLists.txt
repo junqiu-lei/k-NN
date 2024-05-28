@@ -129,9 +129,7 @@ endif ()
 # --------------------------------- TESTS -----------------------------------
 # Windows : Comment the TESTS for now because the tests are failing(failing to build jni_tests.exe) if we are building our target libraries as SHARED libraries.
 # TODO: Fix the failing JNI TESTS on Windows
-# ARM64 : Comment the TESTS for now because the tests are failing in AL2 ARM64 environment.
-# TODO: Fix the failing JNI TESTS on AL2 ARM64
-if ("${WIN32}" STREQUAL "" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+if ("${WIN32}" STREQUAL "")
     if (${CONFIG_ALL} STREQUAL ON OR ${CONFIG_TEST} STREQUAL ON)
         # Reference - https://crascit.com/2015/07/25/cmake-gtest/
         configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -162,6 +160,7 @@ if ("${WIN32}" STREQUAL "" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
                 faiss
                 NonMetricSpaceLib
                 OpenMP::OpenMP_CXX
+                gfortran
                 ${TARGET_LIB_FAISS}
                 ${TARGET_LIB_NMSLIB}
                 ${TARGET_LIB_COMMON}
