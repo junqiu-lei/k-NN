@@ -12,6 +12,9 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/macros.cmake)
 # ---------------------------------- SETUP ----------------------------------
 # Target libraries to be compiled
 # Shared library with common utilities. Not a JNI library. Other JNI libs should depend on this one.
+set(FC "/usr/bin/gfortran")
+set(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
 set(TARGET_LIB_UTIL opensearchknn_util)
 set(TARGET_LIB_COMMON opensearchknn_common)  # common lib for JNI
 set(TARGET_LIB_NMSLIB opensearchknn_nmslib)  # nmslib JNI
@@ -20,9 +23,6 @@ set(TARGET_LIBS "")  # Libs to be installed
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-set(FC "gfortran")
-set(CMAKE_CXX_COMPILER "g++")
 
 option(CONFIG_FAISS "Configure faiss library build when this is on")
 option(CONFIG_NMSLIB "Configure nmslib library build when this is on")
