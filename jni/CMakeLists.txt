@@ -21,6 +21,9 @@ set(TARGET_LIBS "")  # Libs to be installed
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(FC "gfortran")
+set(CMAKE_CXX_COMPILER "g++")
+
 option(CONFIG_FAISS "Configure faiss library build when this is on")
 option(CONFIG_NMSLIB "Configure nmslib library build when this is on")
 option(CONFIG_TEST "Configure tests when this is on")
