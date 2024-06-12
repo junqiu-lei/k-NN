@@ -13,7 +13,7 @@ on:
 
 jobs:
   Get-CI-Image-Tag:
-    uses: opensearch-project/opensearch-build/.github/workflows/get-ci-image-tag.yml@main
+    uses: junqiu-lei/opensearch-build/.github/workflows/get-ci-image-tag.yml@verify-knn-build
     with:
       product: opensearch
 
@@ -41,8 +41,8 @@ jobs:
       # Setup git user so that patches for native libraries can be applied and committed
       - name: Setup git user
         run: |
-          su `id -un 1000` -c 'git config --global user.name "github-actions[bot]"'
-          su `id -un 1000` -c 'git config --global user.email "github-actions[bot]@users.noreply.github.com"'
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Java ${{ matrix.java }}
         uses: actions/setup-java@v1
