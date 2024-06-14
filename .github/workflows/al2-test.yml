@@ -1,0 +1,44 @@
+name: Build and Test k-NN
+on:
+  pull_request:
+    branches:
+      - "*"
+      - "feature/**"
+
+jobs:
+  Build-k-NN-Linux:
+    name: Build and Test k-NN Plugin on Linux
+    runs-on: ubuntu-latest
+    container:
+      image: junqiuamz/ci-runner:knn-al2-1
+      options: --user root
+
+    steps:
+      - name: Checkout k-NN
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup git user
+        run: |
+          su `id -un 1000` -c 'git config --global user.name "github-actions[bot]"'
+          su `id -un 1000` -c 'git config --global user.email "github-actions[bot]@users.noreply.github.com"'
+
+      - name: Run build
+        run: |
+          export JAVA_HOME=/opt/java/openjdk-21
+          export PATH=$PATH:$JAVA_HOME/bin
+          chown -R 1000:1000 `pwd`
+          if lscpu | grep -i avx2; then
+            echo "avx2 available on system"
+            su $(id -un 1000) -c "whoami && java -version && ./gradlew build"
+          else
+            echo "avx2 not available on system"
+            su $(id -un 1000) -c "whoami && java -version && ./gradlew build -Dsimd.enabled=false"
+          fi
+        shell: bash
+
+      - name: Upload Coverage Report
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
