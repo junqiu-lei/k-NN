@@ -12,7 +12,6 @@
 package org.opensearch.knn.index;
 
 import java.util.Locale;
-import org.apache.lucene.index.VectorSimilarityFunction;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +25,19 @@ import static org.opensearch.knn.common.KNNVectorUtil.isZeroVector;
  * nmslib calls the inner_product space "negdotprod". This translation should take place in the nmslib's jni layer.
  */
 public enum SpaceType {
+    // This undefined space type is used to indicate that space type is not provided by user
+    // Later, we need to assign a default value based on data type
+    UNDEFINED("undefined") {
+        @Override
+        public float scoreTranslation(final float rawScore) {
+            throw new IllegalStateException("This method should not be called with UNDEFINED space type");
+        }
+
+        @Override
+        public boolean isSupported(VectorDataType vectorDataType) {
+            throw new IllegalStateException("This method should not be called with UNDEFINED space type");
+        }
+    },
     L2("l2") {
         @Override
         public float scoreTranslation(float rawScore) {
@@ -33,8 +45,8 @@ public enum SpaceType {
         }
 
         @Override
-        public VectorSimilarityFunction getVectorSimilarityFunction() {
-            return VectorSimilarityFunction.EUCLIDEAN;
+        public KNNVectorSimilarityFunction getKnnVectorSimilarityFunction() {
+            return KNNVectorSimilarityFunction.EUCLIDEAN;
         }
 
         @Override
@@ -52,8 +64,8 @@ public enum SpaceType {
         }
 
         @Override
-        public VectorSimilarityFunction getVectorSimilarityFunction() {
-            return VectorSimilarityFunction.COSINE;
+        public KNNVectorSimilarityFunction getKnnVectorSimilarityFunction() {
+            return KNNVectorSimilarityFunction.COSINE;
         }
 
         @Override
@@ -104,8 +116,8 @@ public enum SpaceType {
         }
 
         @Override
-        public VectorSimilarityFunction getVectorSimilarityFunction() {
-            return VectorSimilarityFunction.MAXIMUM_INNER_PRODUCT;
+        public KNNVectorSimilarityFunction getKnnVectorSimilarityFunction() {
+            return KNNVectorSimilarityFunction.MAXIMUM_INNER_PRODUCT;
         }
     },
     HAMMING_BIT("hammingbit") {
@@ -113,9 +125,20 @@ public enum SpaceType {
         public float scoreTranslation(float rawScore) {
             return 1 / (1 + rawScore);
         }
+
+        @Override
+        public boolean isSupported(VectorDataType vectorDataType) {
+            return true;
+        }
+
+        @Override
+        public KNNVectorSimilarityFunction getKnnVectorSimilarityFunction() {
+            return KNNVectorSimilarityFunction.HAMMING;
+        }
     };
 
     public static SpaceType DEFAULT = L2;
+    public static SpaceType DEFAULT_BINARY = HAMMING_BIT;
 
     private final String value;
 
@@ -126,12 +149,12 @@ public enum SpaceType {
     public abstract float scoreTranslation(float rawScore);
 
     /**
-     * Get VectorSimilarityFunction that maps to this SpaceType
+     * Get KNNVectorSimilarityFunction that maps to this SpaceType
      *
-     * @return VectorSimilarityFunction
+     * @return KNNVectorSimilarityFunction
      */
-    public VectorSimilarityFunction getVectorSimilarityFunction() {
-        throw new UnsupportedOperationException(String.format("Space [%s] does not have a vector similarity function", getValue()));
+    public KNNVectorSimilarityFunction getKnnVectorSimilarityFunction() {
+        throw new UnsupportedOperationException(String.format("Space [%s] does not have a knn vector similarity function", getValue()));
     }
 
     /**
@@ -150,6 +173,10 @@ public enum SpaceType {
      */
     public void validateVector(float[] vector) {
         // do nothing
+    }
+
+    public boolean isSupported(VectorDataType vectorDataType) {
+        return VectorDataType.FLOAT == vectorDataType || VectorDataType.BYTE == vectorDataType;
     }
 
     /**
@@ -172,6 +199,12 @@ public enum SpaceType {
 
     public static SpaceType getSpace(String spaceTypeName) {
         for (SpaceType currentSpaceType : SpaceType.values()) {
+            // UNDEFINED space type is a temporary value to be used only until we set proper default value when
+            // space type is not provided by user
+            // Therefore, we do not allow converting space type name to UNDEFINED space type
+            if (SpaceType.UNDEFINED == currentSpaceType) {
+                continue;
+            }
             if (currentSpaceType.getValue().equalsIgnoreCase(spaceTypeName)) {
                 return currentSpaceType;
             }

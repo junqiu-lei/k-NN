@@ -13,6 +13,7 @@ package org.opensearch.knn.index.memory;
 
 import lombok.extern.log4j.Log4j2;
 import org.opensearch.core.action.ActionListener;
+import org.opensearch.knn.common.KNNFaissUtil;
 import org.opensearch.knn.index.IndexUtil;
 import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.index.util.KNNEngine;
@@ -53,6 +54,7 @@ public interface NativeMemoryLoadStrategy<T extends NativeMemoryAllocation, U ex
 
         private final ExecutorService executor;
         private final FileChangesListener indexFileOnDeleteListener;
+        private final KNNFaissUtil knnFaissUtil;
         private ResourceWatcherService resourceWatcherService;
 
         /**
@@ -84,6 +86,7 @@ public interface NativeMemoryLoadStrategy<T extends NativeMemoryAllocation, U ex
                     NativeMemoryCacheManager.getInstance().invalidate(indexFilePath.toString());
                 }
             };
+            knnFaissUtil = new KNNFaissUtil();
         }
 
         @Override
@@ -113,7 +116,8 @@ public interface NativeMemoryLoadStrategy<T extends NativeMemoryAllocation, U ex
                 indexPath.toString(),
                 indexEntryContext.getOpenSearchIndexName(),
                 watcherHandle,
-                sharedIndexState
+                sharedIndexState,
+                knnFaissUtil.isBinaryIndex(indexEntryContext.getParameters())
             );
         }
 
