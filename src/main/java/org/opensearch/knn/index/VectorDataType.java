@@ -62,6 +62,18 @@ public enum VectorDataType {
             return vectorSerializer.byteToFloatArray(byteStream);
         }
 
+    },
+    BINARY("binary") {
+
+        @Override
+        public FieldType createKnnVectorFieldType(int dimension, VectorSimilarityFunction vectorSimilarityFunction) {
+            throw new UnsupportedOperationException("Binary vector data type is not supported for lucene engine");
+        }
+
+        @Override
+        public float[] getVectorFromBytesRef(BytesRef binaryValue) {
+            throw new UnsupportedOperationException("Binary vector data type is not supported for lucene engine");
+        }
     };
 
     public static final String SUPPORTED_VECTOR_DATA_TYPES = Arrays.stream(VectorDataType.values())

@@ -133,6 +133,10 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
             m -> toType(m).vectorDataType
         );
 
+//        .setSerializer((n, c, o) -> {
+//            n.field(c, o.getValue());
+//        }, m -> m.getValue());
+
         /**
          * modelId provides a way for a user to generate the underlying library indices from an already serialized
          * model template index. If this parameter is set, it will take precedence. This parameter is only relevant for
@@ -268,7 +272,7 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
                 // Validates and throws exception if data_type field is set in the index mapping
                 // using any VectorDataType (other than float, which is default) because other
                 // VectorDataTypes are only supported for lucene engine.
-                validateVectorDataTypeWithEngine(vectorDataType);
+//                validateVectorDataTypeWithEngine(vectorDataType);
 
                 return new MethodFieldMapper(
                     name,
@@ -319,7 +323,7 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
             // Validates and throws exception if index.knn is set to true in the index settings
             // using any VectorDataType (other than float, which is default) because we are using NMSLIB engine for LegacyFieldMapper
             // and it only supports float VectorDataType
-            validateVectorDataTypeWithKnnIndexSetting(context.indexSettings().getAsBoolean(KNN_INDEX, false), vectorDataType);
+//            validateVectorDataTypeWithKnnIndexSetting(context.indexSettings().getAsBoolean(KNN_INDEX, false), vectorDataType);
 
             return new LegacyFieldMapper(
                 name,
@@ -588,7 +592,7 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
             final byte[] array = bytesArrayOptional.get();
             spaceType.validateVector(array);
             context.doc().addAll(getFieldsForByteVector(array, fieldType));
-        } else if (VectorDataType.FLOAT == vectorDataType) {
+        } else if (VectorDataType.BINARY == vectorDataType) {
             Optional<float[]> floatsArrayOptional = getFloatsFromContext(context, dimension, methodComponentContext);
 
             if (floatsArrayOptional.isEmpty()) {

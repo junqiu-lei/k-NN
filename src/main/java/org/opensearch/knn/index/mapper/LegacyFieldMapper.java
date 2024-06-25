@@ -15,12 +15,7 @@ import org.opensearch.knn.index.KNNSettings;
 import org.opensearch.knn.index.util.IndexHyperParametersUtil;
 import org.opensearch.knn.index.util.KNNEngine;
 
-import static org.opensearch.knn.common.KNNConstants.DIMENSION;
-import static org.opensearch.knn.common.KNNConstants.HNSW_ALGO_EF_CONSTRUCTION;
-import static org.opensearch.knn.common.KNNConstants.HNSW_ALGO_M;
-import static org.opensearch.knn.common.KNNConstants.KNN_ENGINE;
-import static org.opensearch.knn.common.KNNConstants.METHOD_PARAMETER_SPACE_TYPE;
-import static org.opensearch.knn.common.KNNConstants.SPACE_TYPE;
+import static org.opensearch.knn.common.KNNConstants.*;
 
 /**
  * Field mapper for original implementation. It defaults to using nmslib as the engine and retrieves parameters from index settings.
@@ -63,6 +58,7 @@ public class LegacyFieldMapper extends KNNVectorFieldMapper {
         this.fieldType.putAttribute(DIMENSION, String.valueOf(dimension));
         this.fieldType.putAttribute(SPACE_TYPE, spaceType);
         this.fieldType.putAttribute(KNN_ENGINE, KNNEngine.NMSLIB.getName());
+//        this.fieldType.putAttribute(VECTOR_DATA_TYPE_FIELD, mappedFieldType.getVectorDataType().getValue());
 
         // These are extra just for legacy
         this.fieldType.putAttribute(HNSW_ALGO_M, m);

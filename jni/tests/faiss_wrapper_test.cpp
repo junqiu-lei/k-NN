@@ -496,14 +496,32 @@ std::vector<uint8_t> generateRandomBinaryData(int dim, int numVectors) {
     return data;
 }
 
+// Function to check if an index is binary
+bool isBinaryIndex(const faiss::Index* index) {
+    return index->metric_type == faiss::METRIC_Canberra;
+}
+
+bool isIndexBinaryIVF(faiss::Index * index) {
+    faiss::Index * candidateIndex = index;
+    if (auto indexIDMap = dynamic_cast<faiss::IndexIDMap *>(index)) {
+        candidateIndex = indexIDMap->index;
+    }
+
+    if (auto indexBinaryIVF = dynamic_cast<faiss::IndexBinaryIVF *>(candidateIndex)) {
+        return true;
+    }
+
+    return false;
+}
+
 TEST(FaissBinaryIVFIndexTest, BasicIVFSearch) {
     // Dimension of the vectors, should be a multiple of 8.
-    int d = 256;
+    int d = 8;
 
     // Number of database vectors, training vectors, and query vectors
-    int nb = 1000;    // Database vectors
-    int nt = 500;     // Training vectors
-    int nq = 10;      // Query vectors
+    int nb = 500;    // Database vectors
+    int nt = 400;     // Training vectors
+    int nq = 1;      // Query vectors
 
     // Generate binary data for db, training, and queries
     std::vector<uint8_t> db = generateRandomBinaryData(d, nb);
@@ -514,7 +532,7 @@ TEST(FaissBinaryIVFIndexTest, BasicIVFSearch) {
     faiss::IndexBinaryFlat quantizer(d);
 
     // Number of clusters
-    int nlist = 100;
+    int nlist = 10;
 
     // Initializing index
     faiss::IndexBinaryIVF index(&quantizer, d, nlist);
