@@ -9,6 +9,7 @@ import org.apache.lucene.document.FieldType;
 import org.opensearch.common.Explicit;
 import org.opensearch.common.xcontent.XContentFactory;
 import org.opensearch.knn.index.KNNMethodContext;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.util.KNNEngine;
 
 import java.io.IOException;
@@ -51,6 +52,7 @@ public class MethodFieldMapper extends KNNVectorFieldMapper {
 
         this.fieldType.putAttribute(DIMENSION, String.valueOf(dimension));
         this.fieldType.putAttribute(SPACE_TYPE, knnMethodContext.getSpaceType().getValue());
+        this.fieldType.putAttribute("dataType", knnMethodContext.getMethodComponentContext().getParameters().get("data_type").toString());
 
         KNNEngine knnEngine = knnMethodContext.getKnnEngine();
         this.fieldType.putAttribute(KNN_ENGINE, knnEngine.getName());

@@ -14,6 +14,7 @@ import org.opensearch.knn.index.MethodComponent;
 import org.opensearch.knn.index.MethodComponentContext;
 import org.opensearch.knn.index.Parameter;
 import org.opensearch.knn.index.SpaceType;
+import org.opensearch.knn.index.VectorDataType;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import static org.opensearch.knn.common.KNNConstants.BYTES_PER_KILOBYTES;
+import static org.opensearch.knn.common.KNNConstants.DEFAULT_VECTOR_DATA_TYPE_FIELD;
 import static org.opensearch.knn.common.KNNConstants.ENCODER_PARAMETER_PQ_CODE_COUNT_DEFAULT;
 import static org.opensearch.knn.common.KNNConstants.ENCODER_PARAMETER_PQ_CODE_COUNT_LIMIT;
 import static org.opensearch.knn.common.KNNConstants.ENCODER_PARAMETER_PQ_CODE_SIZE;
@@ -238,6 +240,10 @@ class Faiss extends NativeLibrary {
                     METHOD_ENCODER_PARAMETER,
                     new Parameter.MethodComponentContextParameter(METHOD_ENCODER_PARAMETER, ENCODER_DEFAULT, HNSW_ENCODERS)
                 )
+                .addParameter(
+                    "data_type",
+                    new Parameter.StringParameter("data_type", "float", a -> true)
+                )
                 .setMapGenerator(
                     ((methodComponent, methodComponentContext) -> MethodAsMapBuilder.builder(
                         FAISS_HNSW_DESCRIPTION,
@@ -422,6 +428,9 @@ class Faiss extends NativeLibrary {
             Map<String, Object> initialMap = new HashMap<>();
             initialMap.put(NAME, methodComponent.getName());
             initialMap.put(PARAMETERS, MethodComponent.getParameterMapWithDefaultsAdded(methodComponentContext, methodComponent));
+            if (VectorDataType.BINARY == methodComponentContext.getParameters().get("data_type")) {
+                baseDescription = "B" + baseDescription;
+            }
             return new MethodAsMapBuilder(baseDescription, methodComponent, initialMap);
         }
     }

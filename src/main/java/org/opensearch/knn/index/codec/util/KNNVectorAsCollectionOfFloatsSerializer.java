@@ -37,4 +37,9 @@ public class KNNVectorAsCollectionOfFloatsSerializer implements KNNVectorSeriali
         ByteBuffer.wrap(vectorAsByteArray).asFloatBuffer().get(vector);
         return vector;
     }
+
+    @Override
+    public byte[] byteToByteArray(ByteArrayInputStream byteStream) {
+        return byteStream.readAllBytes();
+    }
 }

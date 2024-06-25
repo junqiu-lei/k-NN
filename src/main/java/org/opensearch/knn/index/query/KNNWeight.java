@@ -285,15 +285,28 @@ public class KNNWeight extends Weight {
             }
             int[] parentIds = getParentIdsArray(context);
             if (knnQuery.getK() > 0) {
-                results = JNIService.queryIndex(
-                    indexAllocation.getMemoryAddress(),
-                    knnQuery.getQueryVector(),
-                    knnQuery.getK(),
-                    knnEngine,
-                    filterIds,
-                    filterType.getValue(),
-                    parentIds
-                );
+                if (knnQuery.getQueryVector() != null) {
+                    results = JNIService.queryIndex(
+                        indexAllocation.getMemoryAddress(),
+                        knnQuery.getQueryVector(),
+                        knnQuery.getK(),
+                        knnEngine,
+                        filterIds,
+                        filterType.getValue(),
+                        parentIds
+                    );
+                }
+                else {
+                    results = JNIService.queryBinaryIndex(
+                        indexAllocation.getMemoryAddress(),
+                        knnQuery.getByteQueryVector(),
+                        knnQuery.getK(),
+                        knnEngine,
+                        filterIds,
+                        filterType.getValue(),
+                        parentIds
+                    );
+                }
             } else {
                 results = JNIService.radiusQueryIndex(
                     indexAllocation.getMemoryAddress(),

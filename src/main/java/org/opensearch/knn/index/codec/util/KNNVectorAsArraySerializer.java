@@ -42,4 +42,17 @@ public class KNNVectorAsArraySerializer implements KNNVectorSerializer {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public byte[] byteToByteArray(ByteArrayInputStream byteStream) {
+        try {
+            final ObjectInputStream objectStream = new ObjectInputStream(byteStream);
+            final byte[] vector = (byte[]) objectStream.readObject();
+            return vector;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

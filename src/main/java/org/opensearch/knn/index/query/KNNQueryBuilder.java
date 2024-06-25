@@ -458,20 +458,20 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
             radius = knnEngine.scoreToRadialThreshold(this.minScore, spaceType);
         }
 
-        if (fieldDimension != vector.length) {
-            throw new IllegalArgumentException(
-                String.format("Query vector has invalid dimension: %d. Dimension should be: %d", vector.length, fieldDimension)
-            );
-        }
+//        if (fieldDimension != vector.length) {
+//            throw new IllegalArgumentException(
+//                String.format("Query vector has invalid dimension: %d. Dimension should be: %d", vector.length, fieldDimension)
+//            );
+//        }
 
         byte[] byteVector = new byte[0];
-        if (VectorDataType.BYTE == vectorDataType) {
+        if (VectorDataType.BYTE == vectorDataType || VectorDataType.BINARY == vectorDataType) {
             byteVector = new byte[vector.length];
             for (int i = 0; i < vector.length; i++) {
                 validateByteVectorValue(vector[i]);
                 byteVector[i] = (byte) vector[i];
             }
-            spaceType.validateVector(byteVector);
+//            spaceType.validateVector(byteVector);
         } else {
             spaceType.validateVector(vector);
         }
@@ -490,7 +490,7 @@ public class KNNQueryBuilder extends AbstractQueryBuilder<KNNQueryBuilder> {
                 .indexName(indexName)
                 .fieldName(this.fieldName)
                 .vector(VectorDataType.FLOAT == vectorDataType ? this.vector : null)
-                .byteVector(VectorDataType.BYTE == vectorDataType ? byteVector : null)
+                .byteVector(VectorDataType.BYTE == vectorDataType || VectorDataType.BINARY == vectorDataType ? byteVector : null)
                 .vectorDataType(vectorDataType)
                 .k(this.k)
                 .filter(this.filter)

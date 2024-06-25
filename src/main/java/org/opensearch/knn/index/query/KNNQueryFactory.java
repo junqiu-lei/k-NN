@@ -79,6 +79,10 @@ public class KNNQueryFactory extends BaseQueryFactory {
         }
 
         if (KNNEngine.getEnginesThatCreateCustomSegmentFiles().contains(createQueryRequest.getKnnEngine())) {
+            if (byteVector != null) {
+                return new KNNQuery(fieldName, byteVector, k, indexName, parentFilter);
+            }
+
             if (filterQuery != null && KNNEngine.getEnginesThatSupportsFilters().contains(createQueryRequest.getKnnEngine())) {
                 log.debug("Creating custom k-NN query with filters for index: {}, field: {} , k: {}", indexName, fieldName, k);
                 return new KNNQuery(fieldName, vector, k, indexName, filterQuery, parentFilter);

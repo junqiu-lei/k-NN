@@ -73,12 +73,13 @@ public class KNNVectorSerializerFactory {
     }
 
     private static SerializationMode getSerializerOrThrowError(int numberOfRemainingBytes, final SerializationMode serializationMode) {
-        if (numberOfRemainingBytes % BYTES_IN_FLOAT == 0) {
-            return serializationMode;
-        }
-        throw new IllegalArgumentException(
-            String.format("Byte stream cannot be deserialized to array of floats due to invalid length %d", numberOfRemainingBytes)
-        );
+        return serializationMode;
+//        if (numberOfRemainingBytes % BYTES_IN_FLOAT == 0) {
+//            return serializationMode;
+//        }
+//        throw new IllegalArgumentException(
+//            String.format("Byte stream cannot be deserialized to array of floats due to invalid length %d", numberOfRemainingBytes)
+//        );
     }
 
     private static byte highByte(short shortValue) {

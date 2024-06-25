@@ -91,6 +91,54 @@ public class KNNCodecUtil {
         return new KNNCodecUtil.Pair(docIdList.stream().mapToInt(Integer::intValue).toArray(), vectorAddress, dimension, serializationMode);
     }
 
+    public static KNNCodecUtil.Pair getBytes(BinaryDocValues values) throws IOException {
+        List<byte[]> vectorList = new ArrayList<>();
+        List<Integer> docIdList = new ArrayList<>();
+        long vectorAddress = 0;
+        int dimension = 0;
+        SerializationMode serializationMode = SerializationMode.COLLECTION_OF_FLOATS;
+
+        long totalLiveDocs = getTotalLiveDocsCount(values);
+        long vectorsStreamingMemoryLimit = KNNSettings.getVectorStreamingMemoryLimit().getBytes();
+        long vectorsPerTransfer = Integer.MIN_VALUE;
+
+        for (int doc = values.nextDoc(); doc != DocIdSetIterator.NO_MORE_DOCS; doc = values.nextDoc()) {
+            BytesRef bytesref = values.binaryValue();
+            try (ByteArrayInputStream byteStream = new ByteArrayInputStream(bytesref.bytes, bytesref.offset, bytesref.length)) {
+                serializationMode = KNNVectorSerializerFactory.serializerModeFromStream(byteStream);
+                final KNNVectorSerializer vectorSerializer = KNNVectorSerializerFactory.getSerializerByStreamContent(byteStream);
+                final byte[] vector = vectorSerializer.byteToByteArray(byteStream);
+                dimension = vector.length;
+
+                if (vectorsPerTransfer == Integer.MIN_VALUE) {
+                    vectorsPerTransfer = (dimension * totalLiveDocs) / vectorsStreamingMemoryLimit;
+                    // This condition comes if vectorsStreamingMemoryLimit is higher than total number floats to transfer
+                    // Doing this will reduce 1 extra trip to JNI layer.
+                    if (vectorsPerTransfer == 0) {
+                        vectorsPerTransfer = totalLiveDocs;
+                    }
+                }
+                if (vectorList.size() == vectorsPerTransfer) {
+                    vectorAddress = JNICommons.storeByteVectorData(
+                        vectorAddress,
+                        vectorList.toArray(new byte[][] {}),
+                        totalLiveDocs * dimension
+                    );
+                    // We should probably come up with a better way to reuse the vectorList memory which we have
+                    // created. Problem here is doing like this can lead to a lot of list memory which is of no use and
+                    // will be garbage collected later on, but it creates pressure on JVM. We should revisit this.
+                    vectorList = new ArrayList<>();
+                }
+                vectorList.add(vector);
+            }
+            docIdList.add(doc);
+        }
+        if (vectorList.isEmpty() == false) {
+            vectorAddress = JNICommons.storeByteVectorData(vectorAddress, vectorList.toArray(new byte[][] {}), totalLiveDocs * dimension);
+        }
+        return new KNNCodecUtil.Pair(docIdList.stream().mapToInt(Integer::intValue).toArray(), vectorAddress, dimension * 8, serializationMode);
+    }
+
     public static long calculateArraySize(int numVectors, int vectorLength, SerializationMode serializationMode) {
         if (serializationMode == SerializationMode.ARRAY) {
             int vectorSize = vectorLength * FLOAT_BYTE_SIZE + JAVA_ARRAY_HEADER_SIZE;

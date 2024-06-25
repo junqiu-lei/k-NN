@@ -269,7 +269,7 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
                 // using any VectorDataType (other than float, which is default) because other
                 // VectorDataTypes are only supported for lucene engine.
                 validateVectorDataTypeWithEngine(vectorDataType);
-
+                knnMethodContext.getMethodComponentContext().getParameters().put("data_type", vectorDataType.getValue());
                 return new MethodFieldMapper(
                     name,
                     mappedFieldType,
@@ -597,6 +597,15 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
             final float[] array = floatsArrayOptional.get();
             spaceType.validateVector(array);
             context.doc().addAll(getFieldsForFloatVector(array, fieldType));
+        } else if (VectorDataType.BINARY == vectorDataType) {
+            Optional<byte[]> bytesArrayOptional = getBytesFromContext(context, dimension);
+
+            if (bytesArrayOptional.isEmpty()) {
+                return;
+            }
+            final byte[] array = bytesArrayOptional.get();
+            spaceType.validateVector(array);
+            context.doc().addAll(getFieldsForByteVector(array, fieldType));
         } else {
             throw new IllegalArgumentException(
                 String.format(Locale.ROOT, "Cannot parse context for unsupported values provided for field [%s]", VECTOR_DATA_TYPE_FIELD)
@@ -687,7 +696,8 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
             context.path().remove();
             return Optional.empty();
         }
-        validateVectorDimension(dimension, vector.size());
+        //TODO validate for binary
+//        validateVectorDimension(dimension, vector.size());
         byte[] array = new byte[vector.size()];
         int i = 0;
         for (Byte f : vector) {

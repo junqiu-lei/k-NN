@@ -32,6 +32,7 @@ public class KNNQuery extends Query {
 
     private final String field;
     private final float[] queryVector;
+    private final byte[] byteQueryVector;
     private int k;
     private final String indexName;
 
@@ -54,6 +55,22 @@ public class KNNQuery extends Query {
     ) {
         this.field = field;
         this.queryVector = queryVector;
+        this.byteQueryVector = null;
+        this.k = k;
+        this.indexName = indexName;
+        this.parentsFilter = parentsFilter;
+    }
+
+    public KNNQuery(
+        final String field,
+        final byte[] queryVector,
+        final int k,
+        final String indexName,
+        final BitSetProducer parentsFilter
+    ) {
+        this.field = field;
+        this.queryVector = null;
+        this.byteQueryVector = queryVector;
         this.k = k;
         this.indexName = indexName;
         this.parentsFilter = parentsFilter;
@@ -69,6 +86,24 @@ public class KNNQuery extends Query {
     ) {
         this.field = field;
         this.queryVector = queryVector;
+        this.byteQueryVector = null;
+        this.k = k;
+        this.indexName = indexName;
+        this.filterQuery = filterQuery;
+        this.parentsFilter = parentsFilter;
+    }
+
+    public KNNQuery(
+        final String field,
+        final byte[] queryVector,
+        final int k,
+        final String indexName,
+        final Query filterQuery,
+        final BitSetProducer parentsFilter
+    ) {
+        this.field = field;
+        this.queryVector = null;
+        this.byteQueryVector = queryVector;
         this.k = k;
         this.indexName = indexName;
         this.filterQuery = filterQuery;
@@ -86,6 +121,7 @@ public class KNNQuery extends Query {
     public KNNQuery(String field, float[] queryVector, String indexName, BitSetProducer parentsFilter) {
         this.field = field;
         this.queryVector = queryVector;
+        this.byteQueryVector = null;
         this.indexName = indexName;
         this.parentsFilter = parentsFilter;
     }
@@ -129,6 +165,10 @@ public class KNNQuery extends Query {
 
     public float[] getQueryVector() {
         return this.queryVector;
+    }
+
+    public byte[] getByteQueryVector() {
+        return this.byteQueryVector;
     }
 
     public int getK() {

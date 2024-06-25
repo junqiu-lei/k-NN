@@ -15,6 +15,7 @@ import org.opensearch.core.common.bytes.BytesArray;
 import org.opensearch.core.xcontent.MediaTypeRegistry;
 import org.opensearch.core.xcontent.DeprecationHandler;
 import org.opensearch.core.xcontent.NamedXContentRegistry;
+import org.opensearch.knn.common.exception.KNNFaissUtil;
 import org.opensearch.knn.index.KNNSettings;
 import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.index.SpaceType;
@@ -110,7 +111,8 @@ class KNN80DocValuesConsumer extends DocValuesConsumer implements Closeable {
         throws IOException {
         // Get values to be indexed
         BinaryDocValues values = valuesProducer.getBinary(field);
-        KNNCodecUtil.Pair pair = KNNCodecUtil.getFloats(values);
+        boolean isBinaryIndex = "binary".equalsIgnoreCase(field.attributes().get("dataType"));
+        KNNCodecUtil.Pair pair = isBinaryIndex ? KNNCodecUtil.getBytes(values) : KNNCodecUtil.getFloats(values);
         if (pair.getVectorAddress() == 0 || pair.docs.length == 0) {
             logger.info("Skipping engine index creation as there are no vectors or docs in the segment");
             return;

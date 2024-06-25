@@ -137,7 +137,7 @@ public abstract class KNNVectorScriptDocValues extends ScriptDocValues<float[]> 
 
         @Override
         protected float[] doGetValue() throws IOException {
-            return getVectorDataType().getVectorFromBytesRef(values.binaryValue());
+            return (float[]) getVectorDataType().getVectorFromBytesRef(values.binaryValue());
         }
     }
 
