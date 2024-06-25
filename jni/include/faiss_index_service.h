@@ -20,6 +20,10 @@
 #include "faiss_methods.h"
 #include <memory>
 
+namespace faiss {
+    struct VectorIOReader;
+}
+
 namespace knn_jni {
 namespace faiss_wrapper {
 
@@ -61,6 +65,16 @@ public:
         std::vector<int64_t> ids,
         std::string indexPath,
         std::unordered_map<std::string, jobject> parameters);
+
+        virtual void createIndexFromTemplate(
+        knn_jni::JNIUtilInterface * jniUtil,
+        JNIEnv * env,
+        faiss::VectorIOReader vectorIoReader,
+        std::vector<int64_t> idVector,
+        int numVectors,
+        std::vector<float> *inputVectors,
+        std::string& indexPathCpp);
+
     virtual ~IndexService() = default;
 protected:
     std::unique_ptr<FaissMethods> faissMethods;
@@ -103,6 +117,16 @@ public:
         std::string indexPath,
         std::unordered_map<std::string, jobject> parameters
     ) override;
+
+    virtual void createIndexFromTemplate(
+        knn_jni::JNIUtilInterface * jniUtil,
+        JNIEnv * env,
+        faiss::VectorIOReader vectorIoReader,
+        std::vector<int64_t> idVector,
+        int numVectors,
+        std::vector<float> *inputVectors,
+        std::string& indexPathCpp) override;
+
     virtual ~BinaryIndexService() = default;
 };
 

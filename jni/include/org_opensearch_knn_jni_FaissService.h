@@ -35,6 +35,7 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createIndex
 JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createBinaryIndex
         (JNIEnv *, jclass, jintArray, jlong, jint, jstring, jobject);
 
+
 /*
  * Class:     org_opensearch_knn_jni_FaissService
  * Method:    createIndexFromTemplate
@@ -42,6 +43,14 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createBinaryInde
  */
 JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createIndexFromTemplate
   (JNIEnv *, jclass, jintArray, jlong, jint, jstring, jbyteArray, jobject);
+
+/*
+ * Class:     org_opensearch_knn_jni_FaissService
+ * Method:    createBinaryIndexFromTemplate
+ * Signature: ([IJILjava/lang/String;[BLjava/util/Map;)V
+ */
+    JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createBinaryIndexFromTemplate
+      (JNIEnv *, jclass, jintArray, jlong, jint, jstring, jbyteArray, jobject);
 
 /*
  * Class:     org_opensearch_knn_jni_FaissService
@@ -109,6 +118,14 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryBin
 
 /*
  * Class:     org_opensearch_knn_jni_FaissService
+ * Method:    queryBIndexWithFilter
+ * Signature: (J[BI[JI[I)[Lorg/opensearch/knn/index/query/KNNQueryResult;
+ */
+JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryBinaryIndexWithFilter
+  (JNIEnv *, jclass, jlong, jbyteArray, jint, jlongArray, jint, jintArray);
+
+/*
+ * Class:     org_opensearch_knn_jni_FaissService
  * Method:    free
  * Signature: (JZ)V
  */
@@ -137,6 +154,14 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_initLibrary
  * Signature: (Ljava/util/Map;IJ)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_org_opensearch_knn_jni_FaissService_trainIndex
+  (JNIEnv *, jclass, jobject, jint, jlong);
+
+/*
+ * Class:     org_opensearch_knn_jni_FaissService
+ * Method:    trainBinaryIndex
+ * Signature: (Ljava/util/Map;IJ)[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_org_opensearch_knn_jni_FaissService_trainBinaryIndex
   (JNIEnv *, jclass, jobject, jint, jlong);
 
 /*

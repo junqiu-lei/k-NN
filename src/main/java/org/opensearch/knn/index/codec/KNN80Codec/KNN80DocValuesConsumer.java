@@ -154,7 +154,7 @@ class KNN80DocValuesConsumer extends DocValuesConsumer implements Closeable {
             if (model.getModelBlob() == null) {
                 throw new RuntimeException(String.format("There is no trained model with id \"%s\"", modelId));
             }
-            indexCreator = () -> createKNNIndexFromTemplate(model.getModelBlob(), pair, knnEngine, indexPath);
+            indexCreator = () -> createKNNIndexFromTemplate(model, pair, knnEngine, indexPath);
         } else {
             indexCreator = () -> createKNNIndexFromScratch(field, pair, knnEngine, indexPath);
         }
@@ -188,18 +188,26 @@ class KNN80DocValuesConsumer extends DocValuesConsumer implements Closeable {
         KNNGraphValue.REFRESH_TOTAL_OPERATIONS.increment();
     }
 
-    private void createKNNIndexFromTemplate(byte[] model, KNNCodecUtil.Pair pair, KNNEngine knnEngine, String indexPath) {
-        Map<String, Object> parameters = ImmutableMap.of(
-            KNNConstants.INDEX_THREAD_QTY,
-            KNNSettings.state().getSettingValue(KNNSettings.KNN_ALGO_PARAM_INDEX_THREAD_QTY)
-        );
+    private void createKNNIndexFromTemplate(Model model, KNNCodecUtil.Pair pair, KNNEngine knnEngine, String indexPath) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put(KNNConstants.INDEX_THREAD_QTY,
+                KNNSettings.state().getSettingValue(KNNSettings.KNN_ALGO_PARAM_INDEX_THREAD_QTY));
+
+        // Update index description of Faiss for binary data type
+        if (KNNEngine.FAISS == knnEngine && SpaceType.HAMMING_BIT.equals(model.getModelMetadata().getSpaceType())) {
+            parameters.put(
+                    KNNConstants.INDEX_DESCRIPTION_PARAMETER,
+                    FAISS_BINARY_INDEX_DESCRIPTION_PREFIX + model.getModelMetadata().getMethodComponentContext().getName().toUpperCase()
+            );
+        }
+
         AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
             JNIService.createIndexFromTemplate(
                 pair.docs,
                 pair.getVectorAddress(),
                 pair.getDimension(),
                 indexPath,
-                model,
+                model.getModelBlob(),
                 parameters,
                 knnEngine
             );
