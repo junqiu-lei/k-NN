@@ -12,6 +12,8 @@
 #include "faiss_wrapper.h"
 
 #include <vector>
+#include <faiss/IndexBinaryFlat.h>
+#include <faiss/IndexBinaryIVF.h>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -617,7 +619,7 @@ TEST(FaissTrainIndexTest, BasicAssertions) {
             reinterpret_cast<std::vector<uint8_t> *>(
                     knn_jni::faiss_wrapper::TrainIndex(
                             &mockJNIUtil, jniEnv, (jobject) &parametersMap, dim,
-                            reinterpret_cast<jlong>(&trainingVectors))));
+                            reinterpret_cast<jlong>(&trainingVectors), nullptr)));
 
     std::unique_ptr<faiss::Index> trainedIndex(
             test_util::FaissLoadFromSerializedIndex(trainedIndexSerialization.get()));
@@ -1021,6 +1023,68 @@ TEST(FaissRangeSearchQueryIndexTestWithParentFilterTest, BasicAssertions) {
         // Need to free up each result
         for (auto it : *results) {
             delete it;
+        }
+    }
+}
+
+// Utility function to generate random binary data
+std::vector<uint8_t> generateRandomBinaryData(int dim, int numVectors) {
+    std::vector<uint8_t> data(dim / 8 * numVectors);
+    std::default_random_engine engine;
+    std::uniform_int_distribution<uint8_t> distribution(0, 255);  // Generate bytes
+    for (auto& byte : data) {
+        byte = distribution(engine);
+    }
+    return data;
+}
+
+TEST(FaissBinaryIVFIndexTest, BasicIVFSearch) {
+    // Dimension of the vectors, should be a multiple of 8.
+    int d = 8;
+
+    // Number of database vectors, training vectors, and query vectors
+    int nb = 500;    // Database vectors
+    int nt = 400;     // Training vectors
+    int nq = 1;      // Query vectors
+
+    // Generate binary data for db, training, and queries
+    std::vector<uint8_t> db = generateRandomBinaryData(d, nb);
+    std::vector<uint8_t> training = generateRandomBinaryData(d, nt);
+    std::vector<uint8_t> queries = generateRandomBinaryData(d, nq);
+
+    // Initializing the quantizer
+    faiss::IndexBinaryFlat quantizer(d);
+
+    // Number of clusters
+    int nlist = 10;
+
+    // Initializing index
+    faiss::IndexBinaryIVF index(&quantizer, d, nlist);
+    index.nprobe = 4; // Number of nearest clusters to be searched per query.
+
+    // Training the quantizer
+    index.train(nt, training.data());
+
+    // Adding the database vectors
+    index.add(nb, db.data());
+
+    // Number of nearest neighbors to retrieve per query vector
+    int k = 4;
+
+    // Output variables for the queries
+    std::vector<int32_t> distances(nq * k);
+    std::vector<faiss::idx_t> labels(nq * k);
+
+    // Querying the index
+    index.search(nq, queries.data(), k, distances.data(), labels.data());
+
+    // Check the results
+    for (int i = 0; i < nq; ++i) {
+        for (int j = 0; j < k; ++j) {
+            int idx = i * k + j;
+            // Ensure that distances are non-negative and labels are within valid range
+            ASSERT_GE(distances[idx], 0);
+            ASSERT_LT(labels[idx], nb);
         }
     }
 }

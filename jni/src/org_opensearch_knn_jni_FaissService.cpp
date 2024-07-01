@@ -210,10 +210,11 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_initLibrary(JNIE
 JNIEXPORT jbyteArray JNICALL Java_org_opensearch_knn_jni_FaissService_trainIndex(JNIEnv * env, jclass cls,
                                                                                  jobject parametersJ,
                                                                                  jint dimensionJ,
-                                                                                 jlong trainVectorsPointerJ)
+                                                                                 jlong trainVectorsPointerJ,
+                                                                                 jstring vectorDataTypeJ)
 {
     try {
-        return knn_jni::faiss_wrapper::TrainIndex(&jniUtil, env, parametersJ, dimensionJ, trainVectorsPointerJ);
+        return knn_jni::faiss_wrapper::TrainIndex(&jniUtil, env, parametersJ, dimensionJ, trainVectorsPointerJ, vectorDataTypeJ);
     } catch (...) {
         jniUtil.CatchCppExceptionAndThrowJava(env);
     }

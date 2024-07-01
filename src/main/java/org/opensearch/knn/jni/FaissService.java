@@ -12,6 +12,7 @@
 package org.opensearch.knn.jni;
 
 import org.opensearch.knn.common.KNNConstants;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.query.KNNQueryResult;
 import org.opensearch.knn.index.util.KNNEngine;
 
@@ -217,7 +218,7 @@ class FaissService {
      * @param trainVectorsPointer pointer to where training vectors are stored in native memory
      * @return bytes array of trained template index
      */
-    public static native byte[] trainIndex(Map<String, Object> indexParameters, int dimension, long trainVectorsPointer);
+    public static native byte[] trainIndex(Map<String, Object> indexParameters, int dimension, long trainVectorsPointer, String vectorDataTypeName);
 
     /**
      * <p>

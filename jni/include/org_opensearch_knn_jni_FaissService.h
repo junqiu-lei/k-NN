@@ -134,10 +134,10 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_initLibrary
 /*
  * Class:     org_opensearch_knn_jni_FaissService
  * Method:    trainIndex
- * Signature: (Ljava/util/Map;IJ)[B
+ * Signature: (Ljava/lang/Object;IJLjava/lang/String;)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_org_opensearch_knn_jni_FaissService_trainIndex
-  (JNIEnv *, jclass, jobject, jint, jlong);
+  (JNIEnv *, jclass, jobject, jint, jlong, jstring);
 
 /*
  * Class:     org_opensearch_knn_jni_FaissService

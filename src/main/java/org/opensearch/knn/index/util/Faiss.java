@@ -252,7 +252,7 @@ class Faiss extends NativeLibrary {
                     ).addParameter(METHOD_PARAMETER_M, "", "").addParameter(METHOD_ENCODER_PARAMETER, ",", "").build())
                 )
                 .build()
-        ).addSpaces(SpaceType.L2, SpaceType.INNER_PRODUCT).build(),
+        ).addSpaces(SpaceType.L2, SpaceType.INNER_PRODUCT, SpaceType.HAMMING_BIT).build(),
         METHOD_IVF,
         KNNMethod.Builder.builder(
             MethodComponent.Builder.builder(METHOD_IVF)
@@ -310,7 +310,7 @@ class Faiss extends NativeLibrary {
                     return ((4L * centroids * dimension) / BYTES_PER_KILOBYTES) + 1;
                 })
                 .build()
-        ).addSpaces(SpaceType.L2, SpaceType.INNER_PRODUCT).build()
+        ).addSpaces(SpaceType.L2, SpaceType.INNER_PRODUCT, SpaceType.HAMMING_BIT).build()
     );
 
     final static Faiss INSTANCE = new Faiss(

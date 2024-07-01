@@ -82,7 +82,7 @@ public class IndexUtil {
      *
      * @return           The field mapping object if found, or null if the field is not found in the index metadata.
      */
-    private static Object getFieldMapping(final Map<String, Object> properties, final String fieldPath) {
+    public static Object getFieldMapping(final Map<String, Object> properties, final String fieldPath) {
         String[] fieldPaths = fieldPath.split("\\.");
         Object currentFieldMapping = properties;
 
@@ -120,7 +120,8 @@ public class IndexUtil {
         IndexMetadata indexMetadata,
         String field,
         int expectedDimension,
-        ModelDao modelDao
+        ModelDao modelDao,
+        SpaceType expectedSpaceType
     ) {
         // Index metadata should not be null
         if (indexMetadata == null) {
@@ -217,6 +218,20 @@ public class IndexUtil {
                 return exception;
             }
 
+            SpaceType spaceType = modelMetadata.getSpaceType();
+
+            if (spaceType != expectedSpaceType) {
+                exception.addValidationError(
+                    String.format(
+                        "Field \"%s\" has space type %s, which is different from " + "space type specified in the training request: %s",
+                        field,
+                        spaceType,
+                        expectedSpaceType
+                    )
+                );
+                return exception;
+            }
+
             return null;
         }
 
@@ -232,6 +247,28 @@ public class IndexUtil {
             );
             return exception;
         }
+
+        Object methods = fieldMap.get(KNNConstants.KNN_METHOD);
+
+        if (methods != null) {
+            Map<String, Object> methodMap = (Map<String, Object>) methods;
+            Object spaceType = methodMap.get(KNNConstants.METHOD_PARAMETER_SPACE_TYPE);
+            if (spaceType != null) {
+                if (!spaceType.equals(expectedSpaceType.getValue())) {
+                    exception.addValidationError(
+                        String.format(
+                            "Field \"%s\" has space type %s, which is different from " + "space type specified in the training request: %s",
+                            field,
+                            spaceType,
+                            expectedSpaceType
+                        )
+                    );
+                    return exception;
+                }
+            }
+        }
+
+//        SpaceType spaceType = methods != null ? ((Map<String, Object>) methods).get(KNNConstants.METHOD_PARAMETER_SPACE_TYPE) : null;
 
         return null;
     }

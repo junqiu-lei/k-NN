@@ -314,7 +314,7 @@ public class TrainingModelRequest extends ActionRequest {
         }
 
         // Validate the training field
-        ValidationException fieldValidation = IndexUtil.validateKnnField(indexMetadata, this.trainingField, this.dimension, modelDao);
+        ValidationException fieldValidation = IndexUtil.validateKnnField(indexMetadata, this.trainingField, this.dimension, modelDao, knnMethodContext.getSpaceType());
         if (fieldValidation != null) {
             exception = exception == null ? new ActionRequestValidationException() : exception;
             exception.addValidationErrors(fieldValidation.validationErrors());

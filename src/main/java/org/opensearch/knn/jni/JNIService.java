@@ -14,6 +14,7 @@ package org.opensearch.knn.jni;
 import org.apache.commons.lang.ArrayUtils;
 import org.opensearch.knn.common.KNNConstants;
 import org.opensearch.knn.common.exception.KNNFaissUtil;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.index.query.KNNQueryResult;
 import org.opensearch.knn.index.util.KNNEngine;
 
@@ -284,9 +285,9 @@ public class JNIService {
      * @param knnEngine           engine to perform the training
      * @return bytes array of trained template index
      */
-    public static byte[] trainIndex(Map<String, Object> indexParameters, int dimension, long trainVectorsPointer, KNNEngine knnEngine) {
+    public static byte[] trainIndex(Map<String, Object> indexParameters, int dimension, long trainVectorsPointer, KNNEngine knnEngine, VectorDataType vectorDataType) {
         if (KNNEngine.FAISS == knnEngine) {
-            return FaissService.trainIndex(indexParameters, dimension, trainVectorsPointer);
+            return FaissService.trainIndex(indexParameters, dimension, trainVectorsPointer, vectorDataType.getValue());
         }
 
         throw new IllegalArgumentException(String.format("TrainIndex not supported for provided engine : %s", knnEngine.getName()));

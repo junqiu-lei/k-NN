@@ -67,7 +67,7 @@ void SetExtraParameters(knn_jni::JNIUtilInterface * jniUtil, JNIEnv *env,
                         const std::unordered_map<std::string, jobject>& parametersCpp, faiss::Index * index);
 
 // Train an index with data provided
-void InternalTrainIndex(faiss::Index * index, faiss::idx_t n, const float* x);
+void InternalTrainIndex(faiss::Index * index, faiss::idx_t n, const float* x, std::string vector_data_type);
 
 // Converts the int FilterIds to Faiss ids type array.
 void convertFilterIdsToFaissIdType(const int* filterIds, int filterIdsLength, faiss::idx_t* convertedFilterIds);
@@ -86,6 +86,7 @@ faiss::IndexIVFPQ * extractIVFPQIndex(faiss::Index * index);
 
 void knn_jni::faiss_wrapper::CreateIndex(knn_jni::JNIUtilInterface * jniUtil, JNIEnv * env, jintArray idsJ, jlong vectorsAddressJ, jint dimJ,
                                          jstring indexPathJ, jobject parametersJ, IndexService* indexService) {
+    std::cout << "CreateIndex is called" << std::endl;
     if (idsJ == nullptr) {
         throw std::runtime_error("IDs cannot be null");
     }
@@ -143,6 +144,8 @@ void knn_jni::faiss_wrapper::CreateIndex(knn_jni::JNIUtilInterface * jniUtil, JN
     // Index path
     std::string indexPathCpp(jniUtil->ConvertJavaStringToCppString(env, indexPathJ));
 
+    std::cout << "Index description in CreateIndex: " << indexDescriptionCpp << std::endl;
+
     // Extra parameters
     // TODO: parse the entire map and remove jni object
     std::unordered_map<std::string, jobject> subParametersCpp;
@@ -158,6 +161,8 @@ void knn_jni::faiss_wrapper::CreateIndex(knn_jni::JNIUtilInterface * jniUtil, JN
 void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface * jniUtil, JNIEnv * env, jintArray idsJ,
                                                      jlong vectorsAddressJ, jint dimJ, jstring indexPathJ,
                                                      jbyteArray templateIndexJ, jobject parametersJ) {
+    std::cout << "CreateIndexFromTemplate is called" << std::endl;
+
     if (idsJ == nullptr) {
         throw std::runtime_error("IDs cannot be null");
     }
@@ -184,6 +189,8 @@ void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface *
         auto threadCount = jniUtil->ConvertJavaObjectToCppInteger(env, parametersCpp[knn_jni::INDEX_THREAD_QUANTITY]);
         omp_set_num_threads(threadCount);
     }
+
+    std::cout << "Index description in CreateIndexFromTemplate: " << knn_jni::GetJObjectFromMapOrThrow(parametersCpp, knn_jni::INDEX_DESCRIPTION) << std::endl;
     jniUtil->DeleteLocalRef(env, parametersJ);
 
     // Read data set
@@ -539,7 +546,15 @@ void knn_jni::faiss_wrapper::InitLibrary() {
 }
 
 jbyteArray knn_jni::faiss_wrapper::TrainIndex(knn_jni::JNIUtilInterface * jniUtil, JNIEnv * env, jobject parametersJ,
-                                              jint dimensionJ, jlong trainVectorsPointerJ) {
+                                              jint dimensionJ, jlong trainVectorsPointerJ, jstring vectorDataTypeJ) {
+    // print log if this is called
+    std::cout << "TrainIndex is called" << std::endl;
+
+    // print vector data type
+    std::cout << "Vector data type: " << jniUtil->ConvertJavaStringToCppString(env, vectorDataTypeJ) << std::endl;
+
+    std::string vectorDataTypeCpp(jniUtil->ConvertJavaStringToCppString(env, vectorDataTypeJ));
+
     // First, we need to build the index
     if (parametersJ == nullptr) {
         throw std::runtime_error("Parameters cannot be null");
@@ -554,6 +569,9 @@ jbyteArray knn_jni::faiss_wrapper::TrainIndex(knn_jni::JNIUtilInterface * jniUti
     // Create faiss index
     jobject indexDescriptionJ = knn_jni::GetJObjectFromMapOrThrow(parametersCpp, knn_jni::INDEX_DESCRIPTION);
     std::string indexDescriptionCpp(jniUtil->ConvertJavaObjectToCppString(env, indexDescriptionJ));
+
+    // print index description
+    std::cout << "Index description in TrainIndex: " << indexDescriptionCpp << std::endl;
 
     std::unique_ptr<faiss::Index> indexWriter;
     indexWriter.reset(faiss::index_factory((int) dimensionJ, indexDescriptionCpp.c_str(), metric));
@@ -583,7 +601,7 @@ jbyteArray knn_jni::faiss_wrapper::TrainIndex(knn_jni::JNIUtilInterface * jniUti
     auto *trainingVectorsPointerCpp = reinterpret_cast<std::vector<float>*>(trainVectorsPointerJ);
     int numVectors = trainingVectorsPointerCpp->size()/(int) dimensionJ;
     if(!indexWriter->is_trained) {
-        InternalTrainIndex(indexWriter.get(), numVectors, trainingVectorsPointerCpp->data());
+        InternalTrainIndex(indexWriter.get(), numVectors, trainingVectorsPointerCpp->data(), vectorDataTypeCpp);
     }
     jniUtil->DeleteLocalRef(env, parametersJ);
 
@@ -649,15 +667,27 @@ void SetExtraParameters(knn_jni::JNIUtilInterface * jniUtil, JNIEnv *env,
     }
 }
 
-void InternalTrainIndex(faiss::Index * index, faiss::idx_t n, const float* x) {
-    if (auto * indexIvf = dynamic_cast<faiss::IndexIVF*>(index)) {
+void InternalTrainIndex(faiss::Index * index, faiss::idx_t n, const float* x, std::string vectorDataTypeCpp) {
+    // Get the index name
+    std::string indexName = typeid(*index).name();
+    std::cout << "trai index name: " << indexName << std::endl;
+
+    if (auto* indexIvf = dynamic_cast<faiss::IndexIVF*>(index)) {
+        std::cout << "InternalTrainIndex is called for indexIvf index" << std::endl;
+        // Handle the IndexIVF case
         if (indexIvf->quantizer_trains_alone == 2) {
-            InternalTrainIndex(indexIvf->quantizer, n, x);
+            InternalTrainIndex(indexIvf->quantizer, n, x, vectorDataTypeCpp);
         }
         indexIvf->make_direct_map();
+    } else if (auto* indexBinaryIvf = dynamic_cast<faiss::IndexBinaryIVF*>(index)) {
+        std::cout << "InternalTrainIndex is called for indexBinaryIvf index" << std::endl;
+        // Handle the IndexBinaryIVF case
+        // Add any specific training requirements or properties for IndexBinaryIVF here
+        indexBinaryIvf->train(n, reinterpret_cast<const uint8_t*>(x));
     }
 
     if (!index->is_trained) {
+        std::cout << "Training index" << std::endl;
         index->train(n, x);
     }
 }
