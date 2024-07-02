@@ -84,8 +84,11 @@ public class JNIService {
         KNNEngine knnEngine
     ) {
         if (KNNEngine.FAISS == knnEngine) {
-            FaissService.createIndexFromTemplate(ids, vectorsAddress, dim, indexPath, templateIndex, parameters);
-            return;
+            if (faissUtil.isBinaryIndex(parameters)) {
+                FaissService.createBinaryIndexFromTemplate(ids, vectorsAddress, dim, indexPath, templateIndex, parameters);
+            } else {
+                FaissService.createIndexFromTemplate(ids, vectorsAddress, dim, indexPath, templateIndex, parameters);
+            }
         }
 
         throw new IllegalArgumentException(
@@ -285,7 +288,11 @@ public class JNIService {
      */
     public static byte[] trainIndex(Map<String, Object> indexParameters, int dimension, long trainVectorsPointer, KNNEngine knnEngine) {
         if (KNNEngine.FAISS == knnEngine) {
-            return FaissService.trainIndex(indexParameters, dimension, trainVectorsPointer);
+            if (faissUtil.isBinaryIndex(indexParameters)) {
+                return FaissService.trainBinaryIndex(indexParameters, dimension, trainVectorsPointer);
+            } else {
+                return FaissService.trainIndex(indexParameters, dimension, trainVectorsPointer);
+            }
         }
 
         throw new IllegalArgumentException(String.format("TrainIndex not supported for provided engine : %s", knnEngine.getName()));
