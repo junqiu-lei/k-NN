@@ -35,6 +35,7 @@ JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createIndex
 JNIEXPORT void JNICALL Java_org_opensearch_knn_jni_FaissService_createBinaryIndex
         (JNIEnv *, jclass, jintArray, jlong, jint, jstring, jobject);
 
+
 /*
  * Class:     org_opensearch_knn_jni_FaissService
  * Method:    createIndexFromTemplate

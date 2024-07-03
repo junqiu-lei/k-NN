@@ -23,6 +23,7 @@
 #include <vector>
 #include <memory>
 #include <type_traits>
+#include <faiss/impl/io.h>
 
 namespace knn_jni {
 namespace faiss_wrapper {
@@ -109,32 +110,26 @@ void IndexService::createIndex(
 void IndexService::createIndexFromTemplate(
         knn_jni::JNIUtilInterface * jniUtil,
         JNIEnv * env,
-        std::string templateIndexPath,
-        int numIds,
-        int threadCount,
-        int64_t vectorsAddress,
-        std::vector<int64_t> ids,
-        std::string indexPath) {
+        faiss::VectorIOReader vectorIoReader,
+        std::vector<int64_t> idVector,
+        int numVectors,
+        std::vector<float> *inputVectors,
+        std::string& indexPathCpp) {
     // Read vectors from memory address
-    auto *inputVectors = reinterpret_cast<std::vector<float>*>(vectorsAddress);
+    // Create faiss index
+    std::unique_ptr<faiss::Index> indexWriter;
+    indexWriter.reset(faiss::read_index(&vectorIoReader, 0));
 
-    // Load the template index
-    faiss::Index* templateIndex = faissMethods->readIndex(templateIndexPath.c_str());
+    faiss::IndexIDMap idMap =  faiss::IndexIDMap(indexWriter.get());
 
-    // Set thread count if it is passed in as a parameter. Setting this variable will only impact the current thread
-    if(threadCount != 0) {
-        omp_set_num_threads(threadCount);
-    }
+    idMap.add_with_ids(numVectors, inputVectors->data(), idVector.data());
 
-    // Create the new index from the template
-    std::unique_ptr<faiss::IndexIDMap> idMap(faissMethods->indexIdMap(templateIndex));
-    idMap->add_with_ids(numIds, inputVectors->data(), ids.data());
+    // Releasing the vectorsAddressJ memory as that is not required once we have created the index.
+    // This is not the ideal approach, please refer this gh issue for long term solution:
+    // https://github.com/opensearch-project/k-NN/issues/1600
+    delete inputVectors;
 
-    // Write the index to disk
-    faissMethods->writeIndex(idMap.get(), indexPath.c_str());
-
-    // Release the memory allocated for the template index
-    delete templateIndex;
+    faiss::write_index(&idMap, indexPathCpp.c_str());
 }
 
 BinaryIndexService::BinaryIndexService(std::unique_ptr<FaissMethods> faissMethods) : IndexService(std::move(faissMethods)) {}
@@ -194,32 +189,31 @@ void BinaryIndexService::createIndex(
 void BinaryIndexService::createIndexFromTemplate(
         knn_jni::JNIUtilInterface * jniUtil,
         JNIEnv * env,
-        std::string templateIndexPath,
-        int numIds,
-        int threadCount,
-        int64_t vectorsAddress,
-        std::vector<int64_t> ids,
-        std::string indexPath) {
+        faiss::VectorIOReader vectorIoReader,
+        std::vector<int64_t> idVector,
+        int numVectors,
+        std::vector<float> *inputVectors,
+        std::string& indexPathCpp) {
     // Read vectors from memory address
-    auto *inputVectors = reinterpret_cast<std::vector<uint8_t>*>(vectorsAddress);
+    // Create faiss index
+    std::unique_ptr<faiss::IndexBinary> indexWriter;
+    indexWriter.reset(dynamic_cast<faiss::IndexBinary*>(faiss::read_index(&vectorIoReader, 0)));
 
-    // Load the template index
-    faiss::IndexBinary* templateIndex = faissMethods->readIndexBinary(templateIndexPath.c_str());
+    // faiss::IndexBinaryIDMap idMap = faiss::IndexBinaryIDMap(indexWriter.get());
 
-    // Set thread count if it is passed in as a parameter. Setting this variable will only impact the current thread
-    if(threadCount != 0) {
-        omp_set_num_threads(threadCount);
-    }
+    // idMap.add_with_ids(numVectors, inputVectors->data(), idVector.data());
+    std::unique_ptr<faiss::IndexBinaryIDMap> idMap(faissMethods->indexBinaryIdMap(indexWriter.get()));
 
-    // Create the new index from the template
-    std::unique_ptr<faiss::IndexBinaryIDMap> idMap(faissMethods->indexBinaryIdMap(templateIndex));
-    idMap->add_with_ids(numIds, inputVectors->data(), ids.data());
+    auto* vectorData = reinterpret_cast<uint8_t*>(inputVectors->data());
+    idMap->add_with_ids(numVectors, vectorData, idVector.data());
+
+    // Releasing the vectorsAddressJ memory as that is not required once we have created the index.
+    // This is not the ideal approach, please refer this gh issue for long term solution:
+    // https://github.com/opensearch-project/k-NN/issues/1600
+    delete inputVectors;
 
     // Write the index to disk
-    faissMethods->writeIndexBinary(idMap.get(), indexPath.c_str());
-
-    // Release the memory allocated for the template index
-    delete templateIndex;
+    faissMethods->writeIndexBinary(idMap.get(), indexPathCpp.c_str());
 }
 
 } // namespace faiss_wrapper

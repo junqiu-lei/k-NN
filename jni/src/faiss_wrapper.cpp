@@ -183,24 +183,36 @@ void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface *
         throw std::runtime_error("Template index cannot be null");
     }
 
-    // Set thread count if it is passed in as a parameter
-    int threadCount = 0;
-    if (parametersJ != nullptr) {
-        auto parametersCpp = jniUtil->ConvertJavaMapToCppMap(env, parametersJ);
-        if (parametersCpp.find(knn_jni::INDEX_THREAD_QUANTITY) != parametersCpp.end()) {
-            threadCount = jniUtil->ConvertJavaObjectToCppInteger(env, parametersCpp[knn_jni::INDEX_THREAD_QUANTITY]);
-        }
-        jniUtil->DeleteLocalRef(env, parametersJ);
+    // Set thread count if it is passed in as a parameter. Setting this variable will only impact the current thread
+    auto parametersCpp = jniUtil->ConvertJavaMapToCppMap(env, parametersJ);
+    if(parametersCpp.find(knn_jni::INDEX_THREAD_QUANTITY) != parametersCpp.end()) {
+        auto threadCount = jniUtil->ConvertJavaObjectToCppInteger(env, parametersCpp[knn_jni::INDEX_THREAD_QUANTITY]);
+        omp_set_num_threads(threadCount);
     }
+    jniUtil->DeleteLocalRef(env, parametersJ);
 
     // Read vectors from memory address
     auto *inputVectors = reinterpret_cast<std::vector<float>*>(vectorsAddressJ);
     int dim = (int)dimJ;
+    int numVectors = (int) (inputVectors->size() / (uint64_t) dim);
     int numIds = jniUtil->GetJavaIntArrayLength(env, idsJ);
+    if (numIds != numVectors) {
+        throw std::runtime_error("Number of IDs does not match number of vectors");
+    }
 
-    // Get bytes from jbyteArray
+    // Get vector of bytes from jbytearray
     int indexBytesCount = jniUtil->GetJavaBytesArrayLength(env, templateIndexJ);
-    jbyte* indexBytesJ = jniUtil->GetByteArrayElements(env, templateIndexJ, nullptr);
+    jbyte * indexBytesJ = jniUtil->GetByteArrayElements(env, templateIndexJ, nullptr);
+
+    faiss::VectorIOReader vectorIoReader;
+    for (int i = 0; i < indexBytesCount; i++) {
+        vectorIoReader.data.push_back((uint8_t) indexBytesJ[i]);
+    }
+    jniUtil->ReleaseByteArrayElements(env, templateIndexJ, indexBytesJ, JNI_ABORT);
+
+    auto idVector = jniUtil->ConvertJavaIntArrayToCppIntVector(env, idsJ);
+
+
     std::vector<uint8_t> indexBytes(indexBytesJ, indexBytesJ + indexBytesCount);
     jniUtil->ReleaseByteArrayElements(env, templateIndexJ, indexBytesJ, JNI_ABORT);
 
@@ -214,7 +226,7 @@ void knn_jni::faiss_wrapper::CreateIndexFromTemplate(knn_jni::JNIUtilInterface *
     std::string templateIndexPathCpp(reinterpret_cast<char*>(indexBytes.data()), indexBytes.size());
 
     // Create index from template
-    indexService->createIndexFromTemplate(jniUtil, env, templateIndexPathCpp, numIds, threadCount, vectorsAddressJ, ids, indexPathCpp);
+    indexService->createIndexFromTemplate(jniUtil, env, vectorIoReader, idVector, numVectors, inputVectors, indexPathCpp);
 
     // Releasing the vectorsAddressJ memory as that is not required once we have created the index.
     // This is not the ideal approach, please refer this gh issue for long term solution:
