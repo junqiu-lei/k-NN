@@ -17,6 +17,7 @@ import org.opensearch.core.xcontent.XContentParser;
 import org.opensearch.index.mapper.NumberFieldMapper;
 import org.opensearch.knn.index.KNNMethodContext;
 import org.opensearch.knn.index.SpaceType;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.indices.ModelUtil;
 import org.opensearch.knn.plugin.KNNPlugin;
 import org.opensearch.knn.plugin.transport.TrainingJobRouterAction;
@@ -30,16 +31,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.opensearch.core.xcontent.XContentParserUtils.ensureExpectedToken;
-import static org.opensearch.knn.common.KNNConstants.DIMENSION;
-import static org.opensearch.knn.common.KNNConstants.KNN_METHOD;
-import static org.opensearch.knn.common.KNNConstants.MAX_VECTOR_COUNT_PARAMETER;
-import static org.opensearch.knn.common.KNNConstants.MODELS;
-import static org.opensearch.knn.common.KNNConstants.MODEL_DESCRIPTION;
-import static org.opensearch.knn.common.KNNConstants.MODEL_ID;
-import static org.opensearch.knn.common.KNNConstants.PREFERENCE_PARAMETER;
-import static org.opensearch.knn.common.KNNConstants.SEARCH_SIZE_PARAMETER;
-import static org.opensearch.knn.common.KNNConstants.TRAIN_FIELD_PARAMETER;
-import static org.opensearch.knn.common.KNNConstants.TRAIN_INDEX_PARAMETER;
+import static org.opensearch.knn.common.KNNConstants.*;
 
 /**
  * Rest Handler for model training api endpoint.
@@ -83,6 +75,7 @@ public class RestTrainModelHandler extends BaseRestHandler {
         String trainingIndex = (String) DEFAULT_NOT_SET_OBJECT_VALUE;
         String trainingField = (String) DEFAULT_NOT_SET_OBJECT_VALUE;
         String description = (String) DEFAULT_NOT_SET_OBJECT_VALUE;
+        VectorDataType vectorDataType = (VectorDataType) DEFAULT_NOT_SET_OBJECT_VALUE;
 
         int dimension = DEFAULT_NOT_SET_INT_VALUE;
         int maximumVectorCount = DEFAULT_NOT_SET_INT_VALUE;
@@ -110,6 +103,8 @@ public class RestTrainModelHandler extends BaseRestHandler {
             } else if (MODEL_DESCRIPTION.equals(fieldName) && ensureNotSet(fieldName, description)) {
                 description = parser.textOrNull();
                 ModelUtil.blockCommasInModelDescription(description);
+            } else if (VECTOR_DATA_TYPE_FIELD.equals(fieldName) && ensureNotSet(fieldName, vectorDataType)) {
+                vectorDataType = VectorDataType.get(parser.text());
             } else {
                 throw new IllegalArgumentException("Unable to parse token. \"" + fieldName + "\" is not a valid " + "parameter.");
             }
@@ -126,6 +121,10 @@ public class RestTrainModelHandler extends BaseRestHandler {
             description = "";
         }
 
+        if (vectorDataType == DEFAULT_NOT_SET_OBJECT_VALUE) {
+            vectorDataType = VectorDataType.FLOAT;
+        }
+
         TrainingModelRequest trainingModelRequest = new TrainingModelRequest(
             modelId,
             knnMethodContext,
@@ -133,7 +132,8 @@ public class RestTrainModelHandler extends BaseRestHandler {
             trainingIndex,
             trainingField,
             preferredNodeId,
-            description
+            description,
+            vectorDataType
         );
 
         if (maximumVectorCount != DEFAULT_NOT_SET_INT_VALUE) {

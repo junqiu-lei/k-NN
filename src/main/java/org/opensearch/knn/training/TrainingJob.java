@@ -18,6 +18,7 @@ import org.opensearch.common.UUIDs;
 import org.opensearch.knn.common.KNNConstants;
 import org.opensearch.knn.index.KNNSettings;
 import org.opensearch.knn.index.SpaceType;
+import org.opensearch.knn.index.VectorDataType;
 import org.opensearch.knn.jni.JNIService;
 import org.opensearch.knn.index.KNNMethodContext;
 import org.opensearch.knn.index.memory.NativeMemoryAllocation;
@@ -69,7 +70,8 @@ public class TrainingJob implements Runnable {
         NativeMemoryEntryContext.AnonymousEntryContext modelAnonymousEntryContext,
         int dimension,
         String description,
-        String nodeAssignment
+        String nodeAssignment,
+        VectorDataType vectorDataType
     ) {
         // Generate random base64 string if one is not provided
         this.modelId = StringUtils.isNotBlank(modelId) ? modelId : UUIDs.randomBase64UUID();
@@ -87,7 +89,8 @@ public class TrainingJob implements Runnable {
                 description,
                 "",
                 nodeAssignment,
-                knnMethodContext.getMethodComponentContext()
+                knnMethodContext.getMethodComponentContext(),
+                vectorDataType
             ),
             null,
             this.modelId
