@@ -5,7 +5,6 @@
 
 package org.opensearch.knn.index.codec.KNN80Codec;
 
-import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.lucene.store.ChecksumIndexInput;
@@ -112,10 +111,22 @@ class KNN80DocValuesConsumer extends DocValuesConsumer implements Closeable {
     }
 
     private VectorTransfer getVectorTransfer(FieldInfo field) {
-        if (VectorDataType.BINARY.getValue().equalsIgnoreCase(field.attributes().get(KNNConstants.VECTOR_DATA_TYPE_FIELD))) {
-            return new VectorTransferByte(KNNSettings.getVectorStreamingMemoryLimit().getBytes());
+        boolean isBinary = false;
+
+        // Check if the field has a model ID and retrieve the model's vector data type
+        if (field.attributes().containsKey(MODEL_ID)) {
+            Model model = ModelCache.getInstance().get(field.attributes().get(MODEL_ID));
+            isBinary = model.getModelMetadata().getVectorDataType() == VectorDataType.BINARY;
+        } else if (VectorDataType.BINARY.getValue().equalsIgnoreCase(field.attributes().get(KNNConstants.VECTOR_DATA_TYPE_FIELD))) {
+            isBinary = true;
         }
-        return new VectorTransferFloat(KNNSettings.getVectorStreamingMemoryLimit().getBytes());
+
+        // Return the appropriate VectorTransfer instance based on the vector data type
+        if (isBinary) {
+            return new VectorTransferByte(KNNSettings.getVectorStreamingMemoryLimit().getBytes());
+        } else {
+            return new VectorTransferFloat(KNNSettings.getVectorStreamingMemoryLimit().getBytes());
+        }
     }
 
     public void addKNNBinaryField(FieldInfo field, DocValuesProducer valuesProducer, boolean isMerge, boolean isRefresh)
@@ -190,14 +201,13 @@ class KNN80DocValuesConsumer extends DocValuesConsumer implements Closeable {
 
     private void createKNNIndexFromTemplate(Model model, KNNCodecUtil.Pair pair, KNNEngine knnEngine, String indexPath) {
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put(KNNConstants.INDEX_THREAD_QTY,
-                KNNSettings.state().getSettingValue(KNNSettings.KNN_ALGO_PARAM_INDEX_THREAD_QTY));
+        parameters.put(KNNConstants.INDEX_THREAD_QTY, KNNSettings.state().getSettingValue(KNNSettings.KNN_ALGO_PARAM_INDEX_THREAD_QTY));
 
         // Update index description of Faiss for binary data type
-        if (KNNEngine.FAISS == knnEngine && SpaceType.HAMMING_BIT.equals(model.getModelMetadata().getSpaceType())) {
+        if (KNNEngine.FAISS == knnEngine && VectorDataType.BINARY.equals(model.getModelMetadata().getVectorDataType())) {
             parameters.put(
-                    KNNConstants.INDEX_DESCRIPTION_PARAMETER,
-                    FAISS_BINARY_INDEX_DESCRIPTION_PREFIX + model.getModelMetadata().getMethodComponentContext().getName().toUpperCase()
+                KNNConstants.INDEX_DESCRIPTION_PARAMETER,
+                FAISS_BINARY_INDEX_DESCRIPTION_PREFIX + model.getModelMetadata().getMethodComponentContext().getName().toUpperCase()
             );
         }
 

@@ -155,8 +155,6 @@ void knn_jni::faiss_wrapper::CreateIndex(knn_jni::JNIUtilInterface * jniUtil, JN
     }
     // end parameters to pass
 
-    std::cout << "Index description in CreateIndex: " << indexDescriptionCpp << std::endl;
-
     // Create index
     indexService->createIndex(jniUtil, env, metric, indexDescriptionCpp, dim, numIds, threadCount, vectorsAddress, ids, indexPathCpp, subParametersCpp);
 }
@@ -263,7 +261,10 @@ void knn_jni::faiss_wrapper::CreateBinaryIndexFromTemplate(knn_jni::JNIUtilInter
     // Read vectors from memory address
     auto *inputVectors = reinterpret_cast<std::vector<uint8_t>*>(vectorsAddressJ);
     int dim = (int)dimJ;
-    int numVectors = (int) (inputVectors->size() / (uint64_t) dim);
+    if (dim % 8 != 0) {
+        throw std::runtime_error("Dimensions should be multiply of 8");
+    }
+    int numVectors = (int) (inputVectors->size() / (uint64_t) (dim / 8));
     int numIds = jniUtil->GetJavaIntArrayLength(env, idsJ);
     if (numIds != numVectors) {
         throw std::runtime_error("Number of IDs does not match number of vectors");
@@ -285,7 +286,7 @@ void knn_jni::faiss_wrapper::CreateBinaryIndexFromTemplate(knn_jni::JNIUtilInter
 
     auto idVector = jniUtil->ConvertJavaIntArrayToCppIntVector(env, idsJ);
     faiss::IndexBinaryIDMap idMap =  faiss::IndexBinaryIDMap(indexWriter.get());
-    idMap.add_with_ids(numVectors, inputVectors->data(), idVector.data());
+    idMap.add_with_ids(numVectors, reinterpret_cast<const uint8_t*>(inputVectors->data()), idVector.data());
     // Releasing the vectorsAddressJ memory as that is not required once we have created the index.
     // This is not the ideal approach, please refer this gh issue for long term solution:
     // https://github.com/opensearch-project/k-NN/issues/1600
@@ -647,7 +648,6 @@ jbyteArray knn_jni::faiss_wrapper::TrainIndex(knn_jni::JNIUtilInterface * jniUti
     jobject indexDescriptionJ = knn_jni::GetJObjectFromMapOrThrow(parametersCpp, knn_jni::INDEX_DESCRIPTION);
     std::string indexDescriptionCpp(jniUtil->ConvertJavaObjectToCppString(env, indexDescriptionJ));
 
-    std::cout << "Index description in TrainIndex: " << indexDescriptionCpp << std::endl;
     std::unique_ptr<faiss::Index> indexWriter;
     indexWriter.reset(faiss::index_factory((int) dimensionJ, indexDescriptionCpp.c_str(), metric));
 
@@ -714,7 +714,6 @@ jbyteArray knn_jni::faiss_wrapper::TrainBinaryIndex(knn_jni::JNIUtilInterface * 
     jobject indexDescriptionJ = knn_jni::GetJObjectFromMapOrThrow(parametersCpp, knn_jni::INDEX_DESCRIPTION);
     std::string indexDescriptionCpp(jniUtil->ConvertJavaObjectToCppString(env, indexDescriptionJ));
 
-    std::cout << "Index description in TrainIndex: " << indexDescriptionCpp << std::endl;
     std::unique_ptr<faiss::IndexBinary> indexWriter;
     indexWriter.reset(faiss::index_binary_factory((int) dimensionJ, indexDescriptionCpp.c_str()));
 
@@ -809,7 +808,6 @@ void InternalTrainIndex(faiss::Index * index, faiss::idx_t n, const float* x) {
 
 void InternalTrainBinaryIndex(faiss::IndexBinary * index, faiss::idx_t n, const float* x) {
     if (auto * indexIvf = dynamic_cast<faiss::IndexBinaryIVF*>(index)) {
-        std::cout << "Index is IVFBinary" << std::endl;
         indexIvf->make_direct_map();
     }
     if (!index->is_trained) {

@@ -84,7 +84,7 @@ public class ModelMetadata implements Writeable, ToXContentObject {
             this.methodComponentContext = MethodComponentContext.EMPTY;
         }
 
-        if (IndexUtil.isVersionOnOrAfterMinRequiredVersion(in.getVersion(), IndexUtil.MODEL_DATA_TYPE)) {
+        if (IndexUtil.isVersionOnOrAfterMinRequiredVersion(in.getVersion(), KNNConstants.METHOD_PARAMETER)) {
             this.vectorDataType = VectorDataType.get(in.readOptionalString());
         } else {
             this.vectorDataType = VectorDataType.FLOAT;
@@ -461,7 +461,7 @@ public class ModelMetadata implements Writeable, ToXContentObject {
         if (IndexUtil.isVersionOnOrAfterMinRequiredVersion(out.getVersion(), IndexUtil.MODEL_METHOD_COMPONENT_CONTEXT_KEY)) {
             getMethodComponentContext().writeTo(out);
         }
-        if (IndexUtil.isVersionOnOrAfterMinRequiredVersion(out.getVersion(), IndexUtil.MODEL_DATA_TYPE)) {
+        if (IndexUtil.isVersionOnOrAfterMinRequiredVersion(out.getVersion(), KNNConstants.METHOD_PARAMETER)) {
             out.writeOptionalString(vectorDataType.getValue());
         }
     }
@@ -484,7 +484,7 @@ public class ModelMetadata implements Writeable, ToXContentObject {
             getMethodComponentContext().toXContent(builder, params);
             builder.endObject();
         }
-        if (IndexUtil.isClusterOnOrAfterMinRequiredVersion(IndexUtil.MODEL_DATA_TYPE)) {
+        if (IndexUtil.isClusterOnOrAfterMinRequiredVersion(KNNConstants.METHOD_PARAMETER)) {
             builder.field(KNNConstants.VECTOR_DATA_TYPE_FIELD, vectorDataType.getValue());
         }
         return builder;

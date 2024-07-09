@@ -606,8 +606,13 @@ public abstract class KNNVectorFieldMapper extends ParametrizedFieldMapper {
         return fields;
     }
 
-    protected void parseCreateField(ParseContext context, int dimension, SpaceType spaceType, MethodComponentContext methodComponentContext, VectorDataType vectorDataType)
-        throws IOException {
+    protected void parseCreateField(
+        ParseContext context,
+        int dimension,
+        SpaceType spaceType,
+        MethodComponentContext methodComponentContext,
+        VectorDataType vectorDataType
+    ) throws IOException {
 
         validateIfKNNPluginEnabled();
         validateIfCircuitBreakerIsNotTriggered();

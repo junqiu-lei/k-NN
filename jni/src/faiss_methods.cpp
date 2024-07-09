@@ -37,13 +37,5 @@ void FaissMethods::writeIndexBinary(const faiss::IndexBinary* idx, const char* f
     faiss::write_index_binary(idx, fname);
 }
 
-faiss::Index* FaissMethods::readIndex(const char* indexPath) {
-    return faiss::read_index(indexPath);
-}
-
-faiss::IndexBinary* FaissMethods::readIndexBinary(const char* indexPath) {
-    return reinterpret_cast<faiss::IndexBinary*>(faiss::read_index_binary(indexPath));
-}
-
 } // namespace faiss_wrapper
 } // namesapce knn_jni

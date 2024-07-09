@@ -87,8 +87,10 @@ public class JNIService {
         if (KNNEngine.FAISS == knnEngine) {
             if (faissUtil.isBinaryIndex(parameters)) {
                 FaissService.createBinaryIndexFromTemplate(ids, vectorsAddress, dim, indexPath, templateIndex, parameters);
+                return;
             } else {
                 FaissService.createIndexFromTemplate(ids, vectorsAddress, dim, indexPath, templateIndex, parameters);
+                return;
             }
         }
 

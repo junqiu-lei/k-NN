@@ -118,14 +118,6 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryBin
 
 /*
  * Class:     org_opensearch_knn_jni_FaissService
- * Method:    queryBIndexWithFilter
- * Signature: (J[BI[JI[I)[Lorg/opensearch/knn/index/query/KNNQueryResult;
- */
-JNIEXPORT jobjectArray JNICALL Java_org_opensearch_knn_jni_FaissService_queryBinaryIndexWithFilter
-  (JNIEnv *, jclass, jlong, jbyteArray, jint, jlongArray, jint, jintArray);
-
-/*
- * Class:     org_opensearch_knn_jni_FaissService
  * Method:    free
  * Signature: (JZ)V
  */
